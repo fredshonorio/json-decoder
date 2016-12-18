@@ -136,8 +136,8 @@ decodeString("\"\"", nonEmptyString); // left("empty string")
 ``` java
 // given this Tree:
 public class Tree<T> {
-    public final T v;
-    public final Seq<Tree<T>> children;
+    final T v;
+    final Seq<Tree<T>> children;
 	// constructor
 }
 
