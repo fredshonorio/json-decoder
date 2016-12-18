@@ -91,7 +91,7 @@ public class ReadmeTest {
         assertEquals(right(none()), r);
 
         r = decodeString("{\"a\": 1}", optionalField("a", String));
-        assertEquals(left("field 'a': not a valid String"), r);
+        assertEquals(left("field 'a': expected String, got JNumber{value=1}"), r);
         r = decodeString("{\"a\": 1}", option(field("a", String)));
         assertEquals(right(none()), r);
 

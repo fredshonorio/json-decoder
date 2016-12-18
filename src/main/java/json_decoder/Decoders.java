@@ -135,6 +135,6 @@ public abstract class Decoders {
     private static <T> Either<String, T> is(Json.JValue val, Predicate<Json.JValue> predicate, Function<Json.JValue, Option<T>> narrow, String type) {
         return predicate.test(val)
             ? right(narrow.apply(val).get())
-            : left("not a valid " + type);
+            : left("expected " + type + ", got " + val.toString());
     }
 }

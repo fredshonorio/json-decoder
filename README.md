@@ -81,7 +81,7 @@ decodeString("{\"b\": 1}", optionalField("a", String)); // right(Option.none())
 decodeString("{\"b\": 1}", option(field("a", String))); // right(Option.none())
 
 // however, in this case `option` will silently ignore an unexpected type, while `optionalField` will fail
-decodeString("{\"a\": 1}", optionalField("a", String)); // left("field 'a': not a valid String")
+decodeString("{\"a\": 1}", optionalField("a", String)); // left("field 'a': expected String, got JNumber{value=1}")
 decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 
 // in summation, `option` always succeeds event if the inner decoder fails

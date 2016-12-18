@@ -28,32 +28,32 @@ public class DecodersTest {
         assertValue("2147483647", Integer, java.lang.Integer.MAX_VALUE);
         assertError("2147483648", Integer, "Overflow");
         assertValue("-2147483648", Integer, java.lang.Integer.MIN_VALUE);
-        assertError("\"1\"", Integer, "not a valid BigDecimal");
+        assertError("\"1\"", Integer, "expected BigDecimal, got JString{value='1'}");
 
         assertValue("1", Long, 1L);
-        assertError("\"1\"", Long, "not a valid BigDecimal");
+        assertError("\"1\"", Long, "expected BigDecimal, got JString{value='1'}");
 
         assertValue("1", Float, 1F);
-        assertError("\"1\"", Float, "not a valid BigDecimal");
+        assertError("\"1\"", Float, "expected BigDecimal, got JString{value='1'}");
 
         assertValue("1", Double, 1D);
-        assertError("\"1\"", Double, "not a valid BigDecimal");
+        assertError("\"1\"", Double, "expected BigDecimal, got JString{value='1'}");
 
         assertValue("1", BigDecimal, java.math.BigDecimal.ONE);
-        assertError("\"1\"", BigDecimal, "not a valid BigDecimal");
+        assertError("\"1\"", BigDecimal, "expected BigDecimal, got JString{value='1'}");
     }
 
     @Test
     public void testString() {
         assertError("hello", String, err -> err.contains("Unrecognized token 'hello'"));
         assertValue("\"hello\"", String, "hello");
-        assertError("1", String, "not a valid String");
+        assertError("1", String, "expected String, got JNumber{value=1}");
     }
 
     @Test
     public void testNull() {
         assertValue("null", nullValue(1), 1);
-        assertError("1", nullValue(1), "not a valid JNull");
+        assertError("1", nullValue(1), "expected JNull, got JNumber{value=1}");
     }
 
     @Test
@@ -84,13 +84,13 @@ public class DecodersTest {
         assertError(
             "{ \"hey\": 1 }",
             field("hey", String),
-            "field 'hey': not a valid String"
+            "field 'hey': expected String, got JNumber{value=1}"
         );
 
         assertError(
             "{ \"a\": { \"b\": 1 } }",
             field("a", field("b", String)),
-            "field 'a': field 'b': not a valid String"
+            "field 'a': field 'b': expected String, got JNumber{value=1}"
         );
     }
 
@@ -135,7 +135,7 @@ public class DecodersTest {
         assertError(
             "{ \"a\": 1 }",
             optionalField("a", String),
-            "field 'a': not a valid String"
+            "field 'a': expected String, got JNumber{value=1}"
         );
 
         // the field doesn't exist, therefore `optionalField` decodes to none
@@ -149,7 +149,7 @@ public class DecodersTest {
     @Test
     public void testList() {
         assertValue("[1, 2 ,3]", list(Integer), List.of(1, 2, 3));
-        assertError("[1, \"2\" ,3]", list(Integer), "array element: not a valid BigDecimal");
+        assertError("[1, \"2\" ,3]", list(Integer), "array element: expected BigDecimal, got JString{value='2'}");
 
         assertValue(
             "[ {\"a\": 1}" +
@@ -193,7 +193,7 @@ public class DecodersTest {
         assertError(
             "[ 1, \"1\" ]",
             list(Integer.map(Object::toString)),
-            "array element: not a valid BigDecimal"
+            "array element: expected BigDecimal, got JString{value='1'}"
         );
 
     }
@@ -213,7 +213,7 @@ public class DecodersTest {
             ", \"b\": \"2\"" +
             "}",
             dict(Integer),
-            "dict key 'b': not a valid BigDecimal"
+            "dict key 'b': expected BigDecimal, got JString{value='2'}"
         );
     }
 
@@ -221,7 +221,7 @@ public class DecodersTest {
     public void testNullable() {
         assertValue("1", nullable(Integer), Option.of(1));
         assertValue("null", nullable(Integer), Option.none());
-        assertError("true", nullable(Integer), "not a valid BigDecimal");
+        assertError("true", nullable(Integer), "expected BigDecimal, got JBoolean{value=true}");
     }
 
     @Test
