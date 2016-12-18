@@ -1,9 +1,30 @@
-group 'test'
-version '1.0-SNAPSHOT'
+plugins {
+    id "java"
+    id "com.jfrog.bintray" version "1.7.3"
+}
 
-apply plugin: 'java'
+group 'com.fredhonorio'
+version '0.0.1'
 
 sourceCompatibility = 1.8
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = "json-decoder"
+        userOrg = "fredhonorio-com"
+        websiteUrl = "https://github.com/fredshonorio/json-decoder"
+        vcsUrl = "https://github.com/fredshonorio/json-decoder"
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
 
 repositories { mavenCentral() }
 
