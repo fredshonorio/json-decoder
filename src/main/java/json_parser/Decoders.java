@@ -106,8 +106,24 @@ public abstract class Decoders {
             .map(HashMap::ofEntries);
     }
 
-    // TODO: index: http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#index
-    // TODO: at: http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode#at
+    public static Decoder<Json.JValue> index(int index) {
+        return JArray
+            .andThen(arr -> arr.get(index)
+                .map(Decoders::succeed)
+                .getOrElse(fail("no element at index " + index)));
+    }
+
+    public static <T> Decoder<T> index(int index, Decoder<T> inner) {
+        return index(index).andThen(item -> fromResult(inner.apply(item)));
+    }
+
+    public static <T> Decoder<T> at(List<String> fields, Decoder<T> inner) {
+        return fields.foldRight(inner, Decoders::field);
+    }
+
+    public static <T> Decoder<T> fromResult(Either<String, T> result) {
+        return t -> result;
+    }
 
     public static <T> Either<String, T> decodeString(String json, Decoder<T> decoder) {
         return tryEither(() -> new JacksonStreamingParser().parse(json))

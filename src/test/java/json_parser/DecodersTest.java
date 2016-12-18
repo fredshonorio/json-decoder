@@ -4,6 +4,7 @@ import javaslang.Tuple;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.control.Option;
+import net.hamnaberg.json.Json;
 import org.junit.Test;
 
 import static java.util.function.Predicate.isEqual;
@@ -220,5 +221,38 @@ public class DecodersTest {
         assertValue("1", nullable(Integer), Option.of(1));
         assertValue("null", nullable(Integer), Option.none());
         assertError("true", nullable(Integer), "not a valid BigDecimal");
+    }
+
+    @Test
+    public void testAt() {
+        assertValue(
+            "{\"a\": { \"b\": { \"c\": 1 } } }",
+            at(List.of("a", "b", "c"), Integer),
+            1
+        );
+
+        assertValue("1", at(List.empty(), Integer), 1);
+    }
+
+    @Test
+    public void testIndex() {
+        assertValue(
+            "[0, 1]",
+            index(1),
+            Json.jNumber(1)
+        );
+
+        assertValue(
+            "[0, 1]",
+            index(1, Integer),
+            1
+        );
+    }
+
+    @Test
+    public void testMapError() {
+        Decoder<Integer> myDec = Integer.mapError(err -> "NO");
+        assertValue("1", myDec, 1);
+        assertError("null", myDec, "NO");
     }
 }

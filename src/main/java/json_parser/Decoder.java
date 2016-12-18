@@ -15,6 +15,10 @@ public interface Decoder<T> {
         return x -> apply(x).map(f);
     }
 
+    default Decoder<T> mapError(Function<String, String> f) {
+        return x -> apply(x).mapLeft(f);
+    }
+
     default <U> Decoder<U> andThen(Function<T, Decoder<U>> f) {
         return x -> apply(x).flatMap(t -> f.apply(t).apply(x));
     }
