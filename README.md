@@ -129,7 +129,7 @@ Decoder<String> nonEmptyString = String.andThen(str -> str.isEmpty() ? fail("emp
 decodeString("\"ok\"", nonEmptyString); // right("ok")
 decodeString("\"\"", nonEmptyString); // left("empty string")
 ```
-[Here](src/test/java/com.fredhonorio.json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` is abstract.
+[Here](src/test/java/com/fredhonorio/json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` is abstract.
 
 ### Recursive structures
 `recursive` can be used to build a decoder that references itself. This is necessary because Java lambdas can't reference `this`.
@@ -157,7 +157,7 @@ String json = "{ \"v\": 1" +
 decodeString(json, intTreeDecoder); // right(tree(1, tree(2), tree(3, tree(4))))
 ```
 
-More examples can be found in [tests](src/test/java/com.fredhonorio.json_decoder/).
+More examples can be found in [tests](src/test/java/com/fredhonorio/json_decoder/).
 
 ## How to get
 TODO
