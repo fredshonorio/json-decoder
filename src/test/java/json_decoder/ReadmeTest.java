@@ -13,7 +13,7 @@ import static json_decoder.Decoders.String;
 import static json_decoder.Decoders.*;
 import static org.junit.Assert.assertEquals;
 
-public class Readme {
+public class ReadmeTest {
 
     public static class Person {
         final String name;
