@@ -110,6 +110,8 @@ decodeString("[1, 2, null]", list(nullable(Integer))); // right(List.of(some(1),
 
 More examples can be found in [tests](src/test/java/json_decoder/).
 
+TODO: andThen for subclassing
+TODO: explain recursion
 TODO: big complex example
 
 ## How to get

@@ -132,6 +132,15 @@ public abstract class Decoders {
         return decoder.apply(json);
     }
 
+    // with Java lambdas we can't use recursive definitions like in Elm, so we provide a solution for the special case
+    // of recursive decoders
+    public static <T> Decoder<T> recursive(Function<Decoder<T>, Decoder<T>> recursive) {
+        // my head hurts: https://github.com/claudemartin/Recursive/
+        final Recursive<Decoder<T>> r = new Recursive<>();
+        r.f = json -> recursive.apply(r.f).apply(json);
+        return r.f;
+    }
+
     private static <T> Either<String, T> is(Json.JValue val, Predicate<Json.JValue> predicate, Function<Json.JValue, Option<T>> narrow, String type) {
         return predicate.test(val)
             ? right(narrow.apply(val).get())
