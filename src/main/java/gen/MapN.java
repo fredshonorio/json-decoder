@@ -1,9 +1,8 @@
-package json_decoder.gen;
+package gen;
 
 import javaslang.collection.List;
 import javaslang.collection.Stream;
 
-// TODO: configure build to exclude this
 class MapN {
 
     private static String mapN(int n) {
