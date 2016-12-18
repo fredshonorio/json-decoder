@@ -1,4 +1,4 @@
-package json_parser;
+package json_decoder;
 
 import javaslang.Tuple;
 import javaslang.collection.HashMap;
@@ -10,15 +10,15 @@ import org.junit.Test;
 import static java.util.function.Predicate.isEqual;
 import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
-import static json_parser.Decoder.map2;
-import static json_parser.Decoders.*;
-import static json_parser.Decoders.Double;
-import static json_parser.Decoders.Float;
-import static json_parser.Decoders.Integer;
-import static json_parser.Decoders.Long;
-import static json_parser.Decoders.String;
-import static json_parser.Test.assertError;
-import static json_parser.Test.assertValue;
+import static json_decoder.Decoder.map2;
+import static json_decoder.Decoders.*;
+import static json_decoder.Decoders.Double;
+import static json_decoder.Decoders.Float;
+import static json_decoder.Decoders.Integer;
+import static json_decoder.Decoders.Long;
+import static json_decoder.Decoders.String;
+import static json_decoder.Test.assertError;
+import static json_decoder.Test.assertValue;
 
 public class DecodersTest {
 

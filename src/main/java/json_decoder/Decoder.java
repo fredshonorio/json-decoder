@@ -1,4 +1,4 @@
-package json_parser;
+package json_decoder;
 
 import javaslang.*;
 import javaslang.control.Either;

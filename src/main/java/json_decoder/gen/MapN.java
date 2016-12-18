@@ -1,4 +1,4 @@
-package json_parser.gen;
+package json_decoder.gen;
 
 import javaslang.collection.List;
 import javaslang.collection.Stream;

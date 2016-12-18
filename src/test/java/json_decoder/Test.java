@@ -1,10 +1,10 @@
-package json_parser;
+package json_decoder;
 
 import javaslang.control.Either;
 
 import java.util.function.Predicate;
 
-import static json_parser.Decoders.decodeString;
+import static json_decoder.Decoders.decodeString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

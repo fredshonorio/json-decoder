@@ -1,4 +1,4 @@
-package json_parser;
+package json_decoder;
 
 import javaslang.Tuple;
 import javaslang.collection.HashMap;
@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
-import static json_parser.EitherExtra.*;
+import static json_decoder.EitherExtra.*;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public abstract class Decoders {
