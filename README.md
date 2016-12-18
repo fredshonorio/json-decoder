@@ -68,7 +68,7 @@ Decoder<Person> personDecoder = Decoder.map2(
 decodeString("{\"name\":\"jack\",\"age\":18}", personDecoder); // right(Person("jack", 18))
 ```
 
-Optional values
+Optional values:
 ``` java
 // `option` wraps the value of the given decoder in a Option, returns `none` if said decoder fails
 decodeString("1", option(String)); // right(Option.none())
@@ -76,7 +76,7 @@ decodeString("1", option(String)); // right(Option.none())
 decodeString("1", option(String).map(optString -> optString.getOrElse(""))); // right("")
 
 // `optionalField` attempts to decode a field but will fail if the field exists but is of a different type
-// in the following case, both optionalField and option return none:
+// in the following case, both `optionalField` and `option` return `none`:
 decodeString("{\"b\": 1}", optionalField("a", String)); // right(Option.none())
 decodeString("{\"b\": 1}", option(field("a", String))); // right(Option.none())
 
@@ -84,7 +84,8 @@ decodeString("{\"b\": 1}", option(field("a", String))); // right(Option.none())
 decodeString("{\"a\": 1}", optionalField("a", String)); // left("field 'a': not a valid String")
 decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 
-// in summation, `option` always succeeds event if the inner decoder fails, while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
+// in summation, `option` always succeeds event if the inner decoder fails
+// while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
 ```
 
 Poorly typed values:
@@ -110,4 +111,5 @@ TODO: big complex example
 ## How to get
 TODO
 
-TODO: license
+## License
+TODO
