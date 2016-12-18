@@ -9,16 +9,20 @@ port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/p
 [jackson](https://github.com/FasterXML/jackson) for parsing json and [javaslang](http://www.javaslang.io/) for utility.
 
 ## Usage
+[This page](https://guide.elm-lang.org/interop/json.html) shows the concepts
+behind the `Json.Decode` elm package, `json-decoder` attempts to mimic that API.
 
 The `Decoders` class contains simple decoders and facilities to build complex ones.
 Once a decoder is built, JSON can be decoded by calling `Decoders.decodeString`
 or `Decoders.decodeValue`. These functions will return an `Either<String, T>`
-which will have either an error message on the left, or a decoded value on the right.
+which will have either an error message on the left, or a successfully decoded
+value on the right.
 
 Simple values:
 
 ``` java
-// we'll statically import Decoders.*
+// we'll statically import Decoders.* for brevity
+// Integer, String, etc. are members of that class
 decodeString("1", Integer); // right(1)
 decodeString("\"string\"", String); // right("string")
 ```
