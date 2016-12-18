@@ -134,9 +134,44 @@ decodeString("\"\"", nonEmptyString); // left("empty string")
 ```
 [Here](src/test/java/json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` has subtypes.
 
-More examples can be found in [tests](src/test/java/json_decoder/).
+Decoding recursive structures:
+``` java
+// given this Tree:
+public class Tree<T> {
+    public final T value;
+    public final Seq<Tree<T>> children;
 
-TODO: explain recursion
+    public Tree(T value, Seq<Tree<T>> children) {
+        this.value = value;
+        this.children = children;
+    }
+}
+
+// we can use use `recursive` to build a decoder that references itself
+// this is necessary because Java lambdas can't reference `this`
+Decoder<Tree<Integer>> intTreeDecoder =
+    recursive(self ->
+        Decoder.map2(
+            field("value", Integer),
+            optionalField("children", list(self)).map(optSeq -> optSeq.getOrElse(List.empty())),
+            Tree::new));
+
+String json = "{ \"value\": 1" +
+              ", \"children\": [ { \"value\": 2 }" +
+                              ", { \"value\": 3, \"children\": [ { \"value\": 4 } ] }" +
+                              "]" +
+              "}";
+
+decodeString(json, intTreeDecoder);
+// right(
+//   tree(1,
+//     tree(2),
+//     tree(3,
+//       tree(4)))
+// )
+```
+
+More examples can be found in [tests](src/test/java/json_decoder/).
 
 ## How to get
 TODO

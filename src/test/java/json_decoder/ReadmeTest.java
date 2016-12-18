@@ -2,11 +2,12 @@ package json_decoder;
 
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
-import javaslang.control.Either;
+import javaslang.collection.Seq;
 import org.junit.Test;
 
 import java.time.temporal.ChronoField;
 
+import static javaslang.collection.List.empty;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 import static javaslang.control.Option.none;
@@ -14,6 +15,7 @@ import static javaslang.control.Option.some;
 import static json_decoder.Decoders.Integer;
 import static json_decoder.Decoders.String;
 import static json_decoder.Decoders.*;
+import static json_decoder.ReadmeTest.Tree.tree;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +46,33 @@ public class ReadmeTest {
             Person person = (Person) o;
             if (age != person.age) return false;
             return name.equals(person.name);
+        }
+    }
+
+    public static class Tree<T> {
+        public final T value;
+        public final Seq<Tree<T>> children;
+
+        public Tree(T value, Seq<Tree<T>> children) {
+            this.value = value;
+            this.children = children;
+        }
+
+        @SafeVarargs
+        public static <T> Tree<T> tree(T root, Tree<T>...children) {
+            return new Tree<T>(root, List.of(children));
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Tree<?> tree = (Tree<?>) o;
+
+            if (value != null ? !value.equals(tree.value) : tree.value != null) return false;
+            return children != null ? children.equals(tree.children) : tree.children == null;
+
         }
     }
 
@@ -139,5 +168,21 @@ public class ReadmeTest {
 
         r = decodeString("\"\"", nonEmptyString);
         assertEquals(left("empty string"), r);
+
+        Decoder<Tree<Integer>> intTreeDecoder =
+            recursive(self ->
+                Decoder.map2(
+                    field("value", Integer),
+                    optionalField("children", list(self)).map(optSeq -> optSeq.getOrElse(empty())),
+                    Tree::new));
+
+        String json = "{ \"value\": 1" +
+                      ", \"children\": [ { \"value\": 2 }" +
+                                      ", { \"value\": 3, \"children\": [ { \"value\": 4 } ] }" +
+                                      "]" +
+                      "}";
+
+        r = decodeString(json, intTreeDecoder);
+        assertEquals(right(tree(1, tree(2), tree(3, tree(4)))), r);
     }
 }
