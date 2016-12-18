@@ -1,17 +1,12 @@
-package json_decoder;
+package com.fredhonorio.json_decoder;
 
-import javaslang.collection.List;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import net.hamnaberg.json.Json;
-import org.junit.*;
 import org.junit.Test;
 
-import java.util.function.Predicate;
-
-import static java.util.function.Predicate.isEqual;
-import static json_decoder.Decoders.*;
-import static json_decoder.Test.assertValue;
+import static com.fredhonorio.json_decoder.Decoders.*;
+import static com.fredhonorio.json_decoder.Test.assertValue;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertTrue;
 

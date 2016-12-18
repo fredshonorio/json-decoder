@@ -1,4 +1,4 @@
-package json_decoder;
+package com.fredhonorio.json_decoder;
 
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
@@ -12,10 +12,10 @@ import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
-import static json_decoder.Decoders.Integer;
-import static json_decoder.Decoders.String;
-import static json_decoder.Decoders.*;
-import static json_decoder.ReadmeTest.Tree.tree;
+import static com.fredhonorio.json_decoder.Decoders.Integer;
+import static com.fredhonorio.json_decoder.Decoders.String;
+import static com.fredhonorio.json_decoder.Decoders.*;
+import static com.fredhonorio.json_decoder.ReadmeTest.Tree.tree;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

@@ -1,4 +1,4 @@
-package json_decoder;
+package com.fredhonorio.json_decoder;
 
 import javaslang.Tuple;
 import javaslang.collection.HashMap;
@@ -10,16 +10,16 @@ import org.junit.Test;
 import static java.util.function.Predicate.isEqual;
 import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
-import static json_decoder.Decoder.map2;
-import static json_decoder.Decoders.*;
-import static json_decoder.Decoders.Boolean;
-import static json_decoder.Decoders.Double;
-import static json_decoder.Decoders.Float;
-import static json_decoder.Decoders.Integer;
-import static json_decoder.Decoders.Long;
-import static json_decoder.Decoders.String;
-import static json_decoder.Test.assertError;
-import static json_decoder.Test.assertValue;
+import static com.fredhonorio.json_decoder.Decoder.map2;
+import static com.fredhonorio.json_decoder.Decoders.*;
+import static com.fredhonorio.json_decoder.Decoders.Boolean;
+import static com.fredhonorio.json_decoder.Decoders.Double;
+import static com.fredhonorio.json_decoder.Decoders.Float;
+import static com.fredhonorio.json_decoder.Decoders.Integer;
+import static com.fredhonorio.json_decoder.Decoders.Long;
+import static com.fredhonorio.json_decoder.Decoders.String;
+import static com.fredhonorio.json_decoder.Test.assertError;
+import static com.fredhonorio.json_decoder.Test.assertValue;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertTrue;
 
@@ -265,7 +265,7 @@ public class DecodersTest {
     @Test
     public void testEnum() {
         assertValue("\"A\"", enumByName(X.class), X.A);
-        assertError("\"C\"", enumByName(X.class), "cannot parse JString{value='C'} into a value of enum json_decoder.DecodersTest$X");
+        assertError("\"C\"", enumByName(X.class), "cannot parse JString{value='C'} into a value of enum com.fredhonorio.json_decoder.DecodersTest$X");
     }
 
     public static abstract class Top {

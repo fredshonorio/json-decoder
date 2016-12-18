@@ -1,4 +1,4 @@
-package json_decoder;
+package com.fredhonorio.json_decoder;
 
 import javaslang.*;
 import javaslang.control.Either;

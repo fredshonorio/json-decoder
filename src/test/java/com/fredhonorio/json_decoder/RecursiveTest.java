@@ -1,11 +1,11 @@
-package json_decoder;
+package com.fredhonorio.json_decoder;
 
 import javaslang.collection.List;
 import javaslang.collection.Seq;
 import org.junit.Test;
 
-import static json_decoder.Decoders.String;
-import static json_decoder.Decoders.*;
+import static com.fredhonorio.json_decoder.Decoders.String;
+import static com.fredhonorio.json_decoder.Decoders.*;
 import static net.hamnaberg.json.Json.JObject;
 import static net.hamnaberg.json.Json.*;
 import static org.junit.Assert.assertEquals;
