@@ -1,15 +1,19 @@
 # json-decoder
 
-__json-decoder__ is a Java 8 library for type-safe JSON decoding, almost a direct port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode]).
+__json-decoder__ is a Java 8 library for type-safe JSON decoding, almost a direct
+port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode]).
 
 ## Dependencies
 
-`json-decoder` uses `immutable-json-ast` for the JSON AST, `jackson` for parsing json and `javaslang` for utility.
+`json-decoder` uses `immutable-json-ast` for the JSON AST,
+`jackson` for parsing json and `javaslang` for utility.
 
 ## Usage
 
-The `Decoders` class contains simple decoders and facilities to build complex ones. Once a decoder is built, JSON can be decoded by calling `Decoders.decodeString` or `Decoders.decodeValue`. These functions will return an
-`Either<String, T>` which will have either an error message on the left, or a decoded value on the right.
+The `Decoders` class contains simple decoders and facilities to build complex ones.
+Once a decoder is built, JSON can be decoded by calling `Decoders.decodeString`
+or `Decoders.decodeValue`. These functions will return an `Either<String, T>`
+which will have either an error message on the left, or a decoded value on the right.
 
 Simple values:
 
@@ -43,7 +47,7 @@ decodeString("{\"a\": \"b\"}", field("b", String)); // left("field 'b': missing"
 decodeString("{\"a\": {\"b\": \"c\"} }", at(List.of("a", "b"), String)); // right("c")
 
 ```
-Decoders for complex structures can be composed using map:
+Decoders for complex structures can be composed using `map<N>`:
 ``` java
 // with the following class:
 public class Person {
@@ -99,12 +103,11 @@ r = decodeString(
 decodeString("[1, 2, null]", list(nullable(Integer))); // right(List.of(some(1), some(2), none()))
 ```
 
-More examples can be found in [tests](tests).
+More examples can be found in [tests](src/test/java/json_decoder/).
 
-TODO: big complex eample
+TODO: big complex example
 
 ## How to get
 TODO
 
-
-todo: license
+TODO: license
