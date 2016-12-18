@@ -5,8 +5,8 @@ port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/p
 
 ## Dependencies
 
-`json-decoder` uses `immutable-json-ast` for the JSON AST,
-`jackson` for parsing json and `javaslang` for utility.
+`json-decoder` uses [immutable-json-ast](https://github.com/hamnis/immutable-json/) for the JSON AST,
+[jackson](https://github.com/FasterXML/jackson) for parsing json and [javaslang](http://www.javaslang.io/) for utility.
 
 ## Usage
 
