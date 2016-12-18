@@ -41,7 +41,6 @@ public abstract class Decoders {
             .flatMap(arr -> sequence(arr.mapToList(inner::apply)).mapLeft(err -> "array element: " + err));
     }
 
-    // TODO: explain
     // option(decoder) allows `decoder` to fail
     public static <T> Decoder<Option<T>> option(Decoder<T> inner) {
         return val -> inner.apply(val)
@@ -49,7 +48,6 @@ public abstract class Decoders {
             .orElse(right(Option.none()));
     }
 
-    // TODO: explain
     // optionalField allows the field to be missing, but the inner decoder cannot fail
     public static <T> Decoder<Option<T>> optionalField(String key, Decoder<T> inner) {
         return root -> JObject.apply(root)

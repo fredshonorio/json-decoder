@@ -26,6 +26,7 @@ public class DecodersTest {
     public void testNumbers() {
         assertValue("1", Integer, 1);
         assertValue("2147483647", Integer, java.lang.Integer.MAX_VALUE);
+        assertError("2147483648", Integer, "Overflow");
         assertValue("-2147483648", Integer, java.lang.Integer.MIN_VALUE);
         assertError("\"1\"", Integer, "not a valid BigDecimal");
 
