@@ -92,7 +92,7 @@ decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 // while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
 ```
 
-Poorly typed values:
+Loosely typed values:
 ``` java
 // `oneOf` attempts multiple decoders, `nullValue` returns a given value is null is found
 r = decodeString(
@@ -108,11 +108,18 @@ r = decodeString(
 decodeString("[1, 2, null]", list(nullable(Integer))); // right(List.of(some(1), some(2), none()))
 ```
 
+Enums can be parsed by attempting to match a string exactly
+``` java
+decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA)
+```
+
 More examples can be found in [tests](src/test/java/json_decoder/).
 
+TODO: extending decoders to have validation
+
 TODO: andThen for subclassing
+
 TODO: explain recursion
-TODO: big complex example
 
 ## How to get
 TODO

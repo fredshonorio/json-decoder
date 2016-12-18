@@ -4,6 +4,8 @@ import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import org.junit.Test;
 
+import java.time.temporal.ChronoField;
+
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 import static javaslang.control.Option.none;
@@ -107,5 +109,8 @@ public class ReadmeTest {
 
         r = decodeString("[1, 2, null]", list(nullable(Integer)));
         assertEquals(right(List.of(some(1), some(2), none())), r);
+
+        r = decodeString("\"ERA\"", enumByName(ChronoField.class));
+        assertEquals(right(ChronoField.ERA), r);
     }
 }

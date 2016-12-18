@@ -256,4 +256,12 @@ public class DecodersTest {
         assertValue("1", myDec, 1);
         assertError("null", myDec, "NO");
     }
+
+    static enum X { A, B }
+
+    @Test
+    public void testEnum() {
+        assertValue("\"A\"", enumByName(X.class), X.A);
+        assertError("\"C\"", enumByName(X.class), "cannot parse JString{value='C'} into a value of enum json_decoder.DecodersTest$X");
+    }
 }

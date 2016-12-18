@@ -132,6 +132,14 @@ public abstract class Decoders {
         return decoder.apply(json);
     }
 
+    public static <T extends Enum<T>> Decoder<T> enumByName(Class<T> enumClass) {
+        List<T> enumValues = List.of(enumClass.getEnumConstants());
+        return json -> Decoders.String.apply(json)
+            .flatMap(s -> enumValues.find(ev -> ev.name().equals(s))
+                .map(Either::<String, T>right)
+                .getOrElse(Either.left("cannot parse " + json + " into a value of enum " + enumClass.getName())));
+    }
+
     // with Java lambdas we can't use recursive definitions like in Elm, so we provide a solution for the special case
     // of recursive decoders
     public static <T> Decoder<T> recursive(Function<Decoder<T>, Decoder<T>> recursive) {
