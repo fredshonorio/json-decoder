@@ -114,7 +114,7 @@ decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA
 ```
 
 Using previous results with `andThen`:
-```
+``` java
 // deciding on a parser based on a result
 Decoder<String> versionedDecoder = field("ver", Integer)
     .andThen(version ->
