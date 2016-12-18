@@ -113,11 +113,28 @@ Enums can be parsed by attempting to match a string exactly
 decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA)
 ```
 
+Using previous results with `andThen`:
+```
+// deciding on a parser based on a result
+Decoder<String> versionedDecoder = field("ver", Integer)
+    .andThen(version ->
+        version == 0 ? field("name", String) :
+        version == 1 ? field("fullName", String) :
+        fail("unknown version " + version));
+
+decodeString("{\"ver\":0,\"name\":\"john\"}", versionedDecoder); // right("john")
+decodeString("{\"ver\":2,\"name\":\"john\"}", versionedDecoder); // left("unknown version 2");
+
+// extending a parser to validate decoded values
+Decoder<String> nonEmptyString = String.andThen(str -> str.isEmpty() ? fail("empty string") : succeed(str));
+
+decodeString("\"ok\"", nonEmptyString); // right("ok")
+decodeString("\"\"", nonEmptyString); // left("empty string")
+
+```
+[Here](src/test/java/json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` has subtypes.
+
 More examples can be found in [tests](src/test/java/json_decoder/).
-
-TODO: extending decoders to have validation
-
-TODO: andThen for subclassing
 
 TODO: explain recursion
 

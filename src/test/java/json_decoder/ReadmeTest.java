@@ -2,6 +2,7 @@ package json_decoder;
 
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
+import javaslang.control.Either;
 import org.junit.Test;
 
 import java.time.temporal.ChronoField;
@@ -13,7 +14,9 @@ import static javaslang.control.Option.some;
 import static json_decoder.Decoders.Integer;
 import static json_decoder.Decoders.String;
 import static json_decoder.Decoders.*;
+import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class ReadmeTest {
 
@@ -112,5 +115,29 @@ public class ReadmeTest {
 
         r = decodeString("\"ERA\"", enumByName(ChronoField.class));
         assertEquals(right(ChronoField.ERA), r);
+
+        Decoder<String> versionedDecoder = field("ver", Integer)
+            .andThen(version ->
+                version == 0 ? field("name", String) :
+                version == 1 ? field("fullName", String) :
+                fail("unknown version " + version));
+
+        r = decodeString("{\"ver\":0,\"name\":\"john\"}", versionedDecoder);
+        assertEquals(right("john"), r);
+
+        r = decodeString("{\"ver\":2,\"name\":\"john\"}", versionedDecoder);
+        assertEquals(left("unknown version 2"), r);
+
+        Decoder<String> nonEmptyString = String
+            .andThen(str ->
+                str.isEmpty()
+                    ? fail("empty string")
+                    : succeed(str));
+
+        r = decodeString("\"ok\"", nonEmptyString);
+        assertEquals(right("ok"), r);
+
+        r = decodeString("\"\"", nonEmptyString);
+        assertEquals(left("empty string"), r);
     }
 }

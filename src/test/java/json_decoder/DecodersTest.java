@@ -12,6 +12,7 @@ import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
 import static json_decoder.Decoder.map2;
 import static json_decoder.Decoders.*;
+import static json_decoder.Decoders.Boolean;
 import static json_decoder.Decoders.Double;
 import static json_decoder.Decoders.Float;
 import static json_decoder.Decoders.Integer;
@@ -19,6 +20,8 @@ import static json_decoder.Decoders.Long;
 import static json_decoder.Decoders.String;
 import static json_decoder.Test.assertError;
 import static json_decoder.Test.assertValue;
+import static net.hamnaberg.json.Json.jObject;
+import static org.junit.Assert.assertTrue;
 
 public class DecodersTest {
 
@@ -263,5 +266,46 @@ public class DecodersTest {
     public void testEnum() {
         assertValue("\"A\"", enumByName(X.class), X.A);
         assertError("\"C\"", enumByName(X.class), "cannot parse JString{value='C'} into a value of enum json_decoder.DecodersTest$X");
+    }
+
+    public static abstract class Top {
+        public static class A extends Top {
+            public final int x;
+
+            public A(int x) {
+                this.x = x;
+            }
+        }
+
+        public static class B extends Top {
+            public final boolean y;
+
+            public B(boolean y) {
+                this.y = y;
+            }
+        }
+    }
+
+    @Test
+    public void testAndThenSubclass() {
+
+        Decoder<Top> topDecoder = field("type", String)
+            .andThen(type ->
+                type.equals("A") ? field("x", Integer).map(Top.A::new) :
+                type.equals("B") ? field("y", Boolean).map(Top.B::new) :
+                fail("unknown type " + type)
+            );
+
+        Top a = topDecoder.apply(
+            jObject("type", "A")
+                .put("x", 1)).get();
+
+        assertTrue(a instanceof Top.A);
+
+        Top b = topDecoder.apply(
+            jObject("type", "B")
+                .put("y", true)).get();
+
+        assertTrue(b instanceof Top.B);
     }
 }
