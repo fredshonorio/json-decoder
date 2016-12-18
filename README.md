@@ -1,7 +1,7 @@
 # json-decoder
 
 __json-decoder__ is a Java 8 library for type-safe JSON decoding, almost a direct
-port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/latest/Json-Decode]).
+port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/5.0.0/Json-Decode).
 
 ## Dependencies
 
