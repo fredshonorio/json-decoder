@@ -83,6 +83,9 @@ public class ReadmeTest {
         r = decodeString("1", Integer);
         assertEquals(right(1), r);
 
+        r = decodeString("1", String);
+        assertEquals(left("expected String, got JNumber{value=1}"), r);
+
         r = decodeString("\"string\"", String);
         assertEquals(right("string"), r);
 

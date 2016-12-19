@@ -21,6 +21,7 @@ value on the right.
 We'll statically import `Decoders.*` for brevity. `Integer`, `String`, etc. are members of that class.
 ``` java
 decodeString("1", Integer); // right(1)
+decodeString("1", String); // left("expected String, got JNumber{value=1}")
 decodeString("\"string\"", String); // right("string")
 ```
 ## Arrays
@@ -28,7 +29,7 @@ decodeString("\"string\"", String); // right("string")
 `index` decodes an array and picks the element at a given index.
 
 ``` java
-decodeString("[1, 2, 3]", list(Integer)); // right(list(1, 2, 3))
+decodeString("[1, 2, 3]", list(Integer)); // right(List.of(1, 2, 3))
 decodeString("[1, 2, \"a\"]", index(2, String)); // right("a")
 ```
 
@@ -39,7 +40,7 @@ decodeString("{\"a\": 1, \"b\": 2, \"c\": 3}", dict(Integer)); // right(HashMap.
 ```
 
 ## Object fields
-`field` decodes an object and accesses a field, fails if the field is missing.
+`field` decodes an object and accesses a field within it, fails if the field is missing.
 `at` traverses an object tree.
 ``` java
 decodeString("{\"a\": \"b\"}", field("a", String)); // right("b")
@@ -47,7 +48,7 @@ decodeString("{\"a\": \"b\"}", field("b", String)); // left("field 'b': missing"
 decodeString("{\"a\": {\"b\": \"c\"} }", at(List.of("a", "b"), String)); // right("c")
 
 ```
-Decoders for complex structures can be build by composed other decoders using `map<N>`:
+Decoders for complex structures can be build by composing other decoders with `map<N>`:
 ``` java
 // with the following class:
 public class Person {
@@ -66,7 +67,7 @@ decodeString("{\"name\":\"jack\",\"age\":18}", personDecoder); // right(Person("
 ```
 
 ## Optional values
-`option` wraps the value of the given `Decoder<T>` in an `Option<T>`, which is `none` if said decoder fails. Mapping map over a decoder can be useful to modify the decoded `Option<T>`.
+`option` wraps the value of the given `Decoder<T>` in an `Option<T>`, which is `none` if said decoder fails. Mapping over a decoder can be useful to modify the decoded value.
 `optionalField` attempts to decode a field but will fail if the field exists but it's decoder fails.
 ``` java
 decodeString("1", option(String)); // right(Option.none())
@@ -82,10 +83,10 @@ However, in this case `option` will silently ignore an unexpected type, while `o
 decodeString("{\"a\": 1}", optionalField("a", String)); // left("field 'a': expected String, got JNumber{value=1}")
 decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 ```
-In summation, `option` always succeeds event if the inner decoder fails while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
+In summation, `option` always succeeds even if the inner decoder fails while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
 
 ## Loosely typed values
-`oneOf` attempts multiple decoders, `nullValue` returns a given value is null is found.
+`oneOf` attempts multiple decoders, `nullValue` returns a given value is `null` is found.
 ``` java
 decodeString(
     "[1, \"hello\", null]",
@@ -107,7 +108,7 @@ decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA
 ```
 ## Composing decoders with `andThen`
 
-`andThen` can be used to apply a decoder after another (to the same value), here are some examples:
+`andThen` can be used to apply a decoder after another (to the same JSON value), here are some examples:
 
 Deciding on a parser based on a result:
 ``` java
@@ -120,6 +121,8 @@ Decoder<String> versionedDecoder = field("ver", Integer)
 decodeString("{\"ver\":0,\"name\":\"john\"}", versionedDecoder); // right("john")
 decodeString("{\"ver\":2,\"name\":\"john\"}", versionedDecoder); // left("unknown version 2");
 ```
+First we decode the object and test if it has a `ver`, then we pick a decoder based on `ver` and apply it to the same object.
+
 Extending a decoder to validate decoded values:
 ``` java
 Decoder<String> nonEmptyString = String.andThen(str -> str.isEmpty() ? fail("empty string") : succeed(str));
@@ -127,7 +130,10 @@ Decoder<String> nonEmptyString = String.andThen(str -> str.isEmpty() ? fail("emp
 decodeString("\"ok\"", nonEmptyString); // right("ok")
 decodeString("\"\"", nonEmptyString); // left("empty string")
 ```
-[Here](src/test/java/com/fredhonorio/json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` is abstract.
+We first attempt to decode a string, and then return a failing decoder with a message if it's empty,
+or a successful decoder otherwise.
+
+[Here](src/test/java/com/fredhonorio/json_decoder/DecodersTest.java#L291) is an example of using `andThen` to build a `Decoder<T>` when `T` is abstract.
 
 ## Recursive structures
 `recursive` can be used to build a decoder that references itself. This is necessary because Java lambdas can't reference `this`.
