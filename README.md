@@ -162,5 +162,5 @@ More examples can be found in [tests](src/test/java/com/fredhonorio/json_decoder
 ## How to get
 TODO
 
-## License
-TODO
+# License
+This project is licensed under the Apache License v2.0.
