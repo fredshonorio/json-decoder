@@ -1,11 +1,15 @@
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+// TODO: explain
+def props = {
+    Properties properties = new Properties()
+    try {
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    } catch (Exception ex) {}
+    return properties }()
 
 def NAME = "json-decoder"
 def GITHUB = "https://github.com/fredshonorio/json-decoder"
 def GITHUB_GIT = "https://github.com/fredshonorio/json-decoder.git"
-def USER = properties.getProperty("bintray.user")
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -22,17 +26,12 @@ def pomConfig = {
         license {
             name "The Apache Software License, Version 2.0"
             url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-        }
-    }
+            distribution "repo" } }
     developers {
         developer {
             id "fredshonorio"
             name "Fred Honório"
-            email "fredshonorio@gmail.com"
-        }
-    }
-}
+            email "fredshonorio@gmail.com" } } }
 
 publishing {
     publications {
@@ -47,21 +46,15 @@ publishing {
                 def root = asNode()
                 root.appendNode('name', NAME)
                 root.appendNode('url', GITHUB)
-                root.children().last() + pomConfig
-            }
-        }
-    }
-}
+                root.children().last() + pomConfig } } } }
 
 bintray {
-    user = USER
-    key = properties.getProperty("bintray.apikey")
+    user = props.getProperty("bintray.user")
+    key = props.getProperty("bintray.apikey")
     publications = ['MyPublication']
     pkg {
         repo = 'maven'
         name = NAME
         userOrg = "fredhonorio-com"
         licenses = ['Apache-2.0']
-        vcsUrl = GITHUB_GIT
-    }
-}
+        vcsUrl = GITHUB_GIT } }
