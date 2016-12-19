@@ -1,14 +1,9 @@
-# json-decoder
+# json-decoder [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Bintray](https://img.shields.io/bintray/v/fredhonorio-com/maven/json-decoder.svg)](https://bintray.com/fredhonorio-com/maven/json-decoder/)
 
 __json-decoder__ is a Java 8 library for type-safe JSON decoding, almost a direct
 port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/5.0.0/Json-Decode).
 
-## Dependencies
-
-`json-decoder` uses [immutable-json-ast](https://github.com/hamnis/immutable-json/) for the JSON AST,
-[jackson](https://github.com/FasterXML/jackson) for parsing json and [javaslang](http://www.javaslang.io/) for utility.
-
-## Usage
+# Usage
 [This page](https://guide.elm-lang.org/interop/json.html) shows the concepts
 behind the `Json.Decode` elm package, `json-decoder` attempts to mimic that API.
 
@@ -18,13 +13,13 @@ or `Decoders.decodeValue`. These functions will return an `Either<String, T>`
 which will have either an error message on the left, or a successfully decoded
 value on the right.
 
-### Simple values
+## Simple values
 We'll statically import `Decoders.*` for brevity. `Integer`, `String`, etc. are members of that class.
 ``` java
 decodeString("1", Integer); // right(1)
 decodeString("\"string\"", String); // right("string")
 ```
-### Arrays
+## Arrays
 `list` decodes a JSON array and decodes every element with a given decoder.
 `index` decodes an array and picks the element at a given index.
 
@@ -33,13 +28,13 @@ decodeString("[1, 2, 3]", list(Integer)); // right(list(1, 2, 3))
 decodeString("[1, 2, \"a\"]", index(2, String)); // right("a")
 ```
 
-### Dictionaries:
+## Dictionaries
 `dict` decodes a `Map<String, T>` given a `Decoder<T>`.
 ``` java
 decodeString("{\"a\": 1, \"b\": 2, \"c\": 3}", dict(Integer)); // right(HashMap.of("a", 1, "b", 2, "c", 3))
 ```
 
-### Object fields
+## Object fields
 `field` decodes an object and accesses a field, fails if the field is missing.
 `at` traverses an object tree.
 ``` java
@@ -66,7 +61,7 @@ Decoder<Person> personDecoder = Decoder.map2(
 decodeString("{\"name\":\"jack\",\"age\":18}", personDecoder); // right(Person("jack", 18))
 ```
 
-### Optional values
+## Optional values
 `option` wraps the value of the given `Decoder<T>` in an `Option<T>`, which is `none` if said decoder fails. Mapping map over a decoder can be useful to modify the decoded `Option<T>`.
 `optionalField` attempts to decode a field but will fail if the field exists but it's decoder fails.
 ``` java
@@ -85,8 +80,7 @@ decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 ```
 In summation, `option` always succeeds event if the inner decoder fails while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
 
-
-### Loosely typed values
+## Loosely typed values
 `oneOf` attempts multiple decoders, `nullValue` returns a given value is null is found.
 ``` java
 decodeString(
@@ -102,12 +96,12 @@ decodeString(
 decodeString("[1, 2, null]", list(nullable(Integer))); // right(List.of(some(1), some(2), none()))
 ```
 
-### Enums
+## Enums
 Enums can be parsed by attempting to match a string exactly.
 ``` java
 decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA)
 ```
-### Composing decoders with `andThen`
+## Composing decoders with `andThen`
 
 `andThen` can be used to apply a decoder after another (to the same value), here are some examples:
 
@@ -131,7 +125,7 @@ decodeString("\"\"", nonEmptyString); // left("empty string")
 ```
 [Here](src/test/java/com/fredhonorio/json_decoder/DecodersTest.java#L290) is an example of using `andThen` to build a `Decoder<T>` when `T` is abstract.
 
-### Recursive structures
+## Recursive structures
 `recursive` can be used to build a decoder that references itself. This is necessary because Java lambdas can't reference `this`.
 ``` java
 // given this Tree:
@@ -157,10 +151,22 @@ String json = "{ \"v\": 1" +
 decodeString(json, intTreeDecoder); // right(tree(1, tree(2), tree(3, tree(4))))
 ```
 
-More examples can be found in [tests](src/test/java/com/fredhonorio/json_decoder/).
+More examples can be found in the [tests](src/test/java/com/fredhonorio/json_decoder/).
 
-## How to get
-TODO
+# Get it
+From [jcenter](https://bintray.com/bintray/jcenter):
+``` groovy
+repositories {
+	jcenter()
+}
+
+compile 'com.fredhonorio:json-decoder:0.0.1-2'
+```
+
+# Dependencies
+
+__json-decoder__ uses [immutable-json-ast](https://github.com/hamnis/immutable-json/) for the JSON AST,
+[jackson](https://github.com/FasterXML/jackson) for parsing JSON and [javaslang](http://www.javaslang.io/) for utility.
 
 # License
 This project is licensed under the Apache License v2.0.
