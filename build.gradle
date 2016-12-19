@@ -3,6 +3,7 @@ plugins {
     id "com.jfrog.bintray" version "1.7.3"
     id 'maven'
     id 'maven-publish'
+    id 'jacoco'
 }
 
 group 'com.fredhonorio'
@@ -11,6 +12,9 @@ version '0.0.1-2'
 sourceCompatibility = 1.8
 
 apply from: 'release.gradle'
+
+jacocoTestReport { reports { xml.enabled true } }
+check.dependsOn jacocoTestReport
 
 repositories { mavenCentral() }
 
