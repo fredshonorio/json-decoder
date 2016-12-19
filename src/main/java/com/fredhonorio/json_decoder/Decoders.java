@@ -79,7 +79,7 @@ public abstract class Decoders {
         return oneOf(List.of(decoders));
     }
 
-    public static <T> Decoder<T> oneOf(List<Decoder<T>> decoders) {
+    public static <T> Decoder<T> oneOf(Seq<Decoder<T>> decoders) {
         return obj -> decoders.foldLeft(
             left("no decoders given"),
             (z, x) -> z.orElse(x.apply(obj))
@@ -115,7 +115,7 @@ public abstract class Decoders {
         return index(index).andThen(item -> fromResult(inner.apply(item)));
     }
 
-    public static <T> Decoder<T> at(List<String> fields, Decoder<T> inner) {
+    public static <T> Decoder<T> at(Seq<String> fields, Decoder<T> inner) {
         return fields.foldRight(inner, Decoders::field);
     }
 

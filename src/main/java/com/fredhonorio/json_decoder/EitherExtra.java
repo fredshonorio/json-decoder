@@ -1,6 +1,7 @@
 package com.fredhonorio.json_decoder;
 
 import javaslang.collection.List;
+import javaslang.collection.Seq;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
@@ -16,7 +17,7 @@ abstract class EitherExtra {
     }
 
     // @formatter:off
-    static <T> Either<String, List<T>> sequence(List<Either<String, T>> res) {
+    static <T> Either<String, Seq<T>> sequence(Seq<Either<String, T>> res) {
         return res.foldLeft(
             right(List.<T>empty()),
             (z, x) ->
