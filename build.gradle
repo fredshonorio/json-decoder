@@ -28,5 +28,7 @@ dependencies {
             "net.hamnaberg.json:immutable-json-ast:3.6.1",
             "io.javaslang:javaslang:2.0.4"
 
-    testCompile "junit:junit:4.11"
+    testCompile "junit:junit:4.11",
+                "net.trajano.commons:commons-testing:2.1.0"
+
 }

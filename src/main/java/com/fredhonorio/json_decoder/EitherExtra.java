@@ -9,7 +9,9 @@ import javaslang.control.Try;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 
-abstract class EitherExtra {
+final class EitherExtra {
+    private EitherExtra() {
+    }
 
     static <T> Either<String, T> ofOption(Option<T> s, String ifMissing) {
         return s.map(Either::<String, T>right)

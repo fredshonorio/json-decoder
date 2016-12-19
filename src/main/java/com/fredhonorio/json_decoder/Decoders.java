@@ -19,7 +19,7 @@ import static javaslang.control.Either.right;
 import static com.fredhonorio.json_decoder.EitherExtra.*;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public abstract class Decoders {
+public final class Decoders {
     private Decoders() {
     }
 
