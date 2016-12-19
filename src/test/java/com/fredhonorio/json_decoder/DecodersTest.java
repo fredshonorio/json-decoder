@@ -1,12 +1,13 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.Tuple;
+import javaslang.*;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.control.Option;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
+import static com.fredhonorio.json_decoder.Decoder.map5;
 import static java.util.function.Predicate.isEqual;
 import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
@@ -307,5 +308,65 @@ public class DecodersTest {
                 .put("y", true)).get();
 
         assertTrue(b instanceof Top.B);
+    }
+
+    @Test
+    public void testMapN() {
+
+        Decoder<Tuple4<java.lang.String, java.lang.String, java.lang.Integer, java.lang.Boolean>> dec4 = Decoder.map4(
+            index(0, String),
+            index(1, String),
+            index(2, Integer),
+            index(3, Boolean),
+            Tuple::of);
+
+        assertValue("[\"0\", \"1\", 2, true]", dec4, Tuple.of("0", "1", 2, true));
+
+        Decoder<Tuple5<java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer>> dec5 = Decoder.map5(
+            index(0, Integer),
+            index(1, Integer),
+            index(2, Integer),
+            index(3, Integer),
+            index(4, Integer),
+            Tuple::of);
+
+        assertValue(List.range(0, 5).mkString("[", ",", "]"), dec5, Tuple.of(0, 1, 2, 3, 4));
+
+        Decoder<Tuple6<java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer>> dec6 = Decoder.map6(
+            index(0, Integer),
+            index(1, Integer),
+            index(2, Integer),
+            index(3, Integer),
+            index(4, Integer),
+            index(5, Integer),
+            Tuple::of);
+
+        assertValue(List.range(0, 6).mkString("[", ",", "]"), dec6, Tuple.of(0, 1, 2, 3, 4, 5));
+
+        Decoder<Tuple7<java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer>> dec7 = Decoder.map7(
+            index(0, Integer),
+            index(1, Integer),
+            index(2, Integer),
+            index(3, Integer),
+            index(4, Integer),
+            index(5, Integer),
+            index(6, Integer),
+            Tuple::of
+        );
+
+        assertValue(List.range(0, 7).mkString("[", ",", "]"), dec7, Tuple.of(0, 1, 2, 3, 4, 5, 6));
+
+        Decoder<Tuple8<java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer, java.lang.Integer>> dec8 = Decoder.map8(
+            index(0, Integer),
+            index(1, Integer),
+            index(2, Integer),
+            index(3, Integer),
+            index(4, Integer),
+            index(5, Integer),
+            index(6, Integer),
+            index(7, Integer),
+            Tuple::of);
+
+        assertValue(List.range(0, 8).mkString("[", ",", "]"), dec8, Tuple.of(0, 1, 2, 3, 4, 5, 6, 7));
     }
 }

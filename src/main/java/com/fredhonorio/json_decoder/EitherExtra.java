@@ -8,7 +8,7 @@ import javaslang.control.Try;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 
-class EitherExtra {
+abstract class EitherExtra {
 
     static <T> Either<String, T> ofOption(Option<T> s, String ifMissing) {
         return s.map(Either::<String, T>right)
