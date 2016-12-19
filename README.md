@@ -1,4 +1,8 @@
-# json-decoder [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Bintray](https://img.shields.io/bintray/v/fredhonorio-com/maven/json-decoder.svg)](https://bintray.com/fredhonorio-com/maven/json-decoder/)
+# json-decoder
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Bintray](https://img.shields.io/bintray/v/fredhonorio-com/maven/json-decoder.svg)](https://bintray.com/fredhonorio-com/maven/json-decoder/)
+[![Travis](https://img.shields.io/travis/rust-lang/rust.svg)](https://travis-ci.org/fredshonorio/json-decoder)
+[![Codecov](https://img.shields.io/codecov/c/github/fredshonorio/json-decoder.svg)](https://codecov.io/gh/fredshonorio/json-decoder)
 
 __json-decoder__ is a Java 8 library for type-safe JSON decoding, almost a direct
 port of [Elm](http://elm-lang.org)'s [Json.Decode](http://package.elm-lang.org/packages/elm-lang/core/5.0.0/Json-Decode).
