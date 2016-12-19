@@ -12,6 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 public class RecursiveTest {
 
+    @SuppressWarnings("EqualsHashCode") // hashCode() is never called
     public static class Person {
         public final String name;
         public final List<Person> children;

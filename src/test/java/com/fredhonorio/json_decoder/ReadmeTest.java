@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ReadmeTest {
 
+    @SuppressWarnings("EqualsHashCode") // hashCode() is never called
     public static class Person {
         final String name;
         final int age;
@@ -49,6 +50,7 @@ public class ReadmeTest {
         }
     }
 
+    @SuppressWarnings("EqualsHashCode") // hashCode() is never called
     public static class Tree<T> {
         public final T value;
         public final Seq<Tree<T>> children;

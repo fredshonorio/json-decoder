@@ -4,6 +4,7 @@ plugins {
     id 'maven'
     id 'maven-publish'
     id 'jacoco'
+    id "net.ltgt.errorprone" version "0.0.8"
 }
 
 group 'com.fredhonorio'
