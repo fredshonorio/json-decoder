@@ -58,6 +58,6 @@ public class RecursiveTest {
                     new Person("son", List.empty()),
                     new Person("daughter", List.empty())
                 )))),
-            personDecoder.apply(family).get());
+            decodeValue(family, personDecoder).get());
     }
 }
