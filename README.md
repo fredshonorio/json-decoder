@@ -25,7 +25,7 @@ decodeString("1", String); // left("expected String, got JNumber{value=1}")
 decodeString("\"string\"", String); // right("string")
 ```
 ## Arrays
-`list` decodes a JSON array and decodes every element with a given decoder.
+`list` decodes a JSON array and decodes every element with a given decoder. Returns a javaslang `Seq<T>`.
 `index` decodes an array and picks the element at a given index.
 
 ``` java
@@ -39,6 +39,27 @@ decodeString("[1, 2, \"a\"]", index(2, String)); // right("a")
 decodeString("{\"a\": 1, \"b\": 2, \"c\": 3}", dict(Integer)); // right(HashMap.of("a", 1, "b", 2, "c", 3))
 ```
 
+## Enums
+Enums can be parsed by attempting to match a string exactly.
+``` java
+decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA)
+```
+
+## Transforming values with `map`
+`map` can be used on a decoder to transform a decoded value. Like changing the container:
+``` java
+Decoder<LinkedList<Integer>> linkedList = list(Integer)
+    .map(ints -> ints.toJavaCollection(LinkedList::new));
+
+decodeString("[1, 2, 3]", linkedList); // right(LinkedList(1, 2, 3))
+```
+
+Or computing some other value, like the sum of an array:
+``` java
+Decoder<Integer> sum = list(Integer).map(ints -> ints.fold(0, (z, x) -> z + x));
+decodeString("[1, 2, 3]", sum); // right(6)
+```
+
 ## Object fields
 `field` decodes an object and accesses a field within it, fails if the field is missing.
 `at` traverses an object tree.
@@ -48,7 +69,8 @@ decodeString("{\"a\": \"b\"}", field("b", String)); // left("field 'b': missing"
 decodeString("{\"a\": {\"b\": \"c\"} }", at(List.of("a", "b"), String)); // right("c")
 
 ```
-Decoders for complex structures can be build by composing other decoders with `map<N>`:
+Decoders for complex structures can be built by composing other decoders with `map<N>`,
+where `N` is the number of decoders:
 ``` java
 // with the following class:
 public class Person {
@@ -64,26 +86,29 @@ Decoder<Person> personDecoder = Decoder.map2(
 );
 
 decodeString("{\"name\":\"jack\",\"age\":18}", personDecoder); // right(Person("jack", 18))
+decodeString("{\"name\":\"jack\"}", personDecoder); // left("field 'age': missing")
 ```
 
 ## Optional values
-`option` wraps the value of the given `Decoder<T>` in an `Option<T>`, which is `none` if said decoder fails. Mapping over a decoder can be useful to modify the decoded value.
-`optionalField` attempts to decode a field but will fail if the field exists but it's decoder fails.
+`option` will try to use a given encoder and return the result inside an `Option`,
+if the decoder fails it just returns `Option.none()`. Therefore, it will never fail.
+`optionalField` only succeeds if the field is missing or the field exists and
+the inner decoder succeeds as well.
+
 ``` java
-decodeString("1", option(String)); // right(Option.none())
-decodeString("1", option(String).map(optString -> optString.getOrElse(""))); // right("")
+decodeString("1", option(Integer)); // right(Option.of(1))
+decodeString("1", option(String)); // right(Option.none()) -- notice that decoding did not fail
 ```
 In the following case, both `optionalField` and `option` return `none`:
 ``` java
 decodeString("{\"b\": 1}", optionalField("a", String)); // right(Option.none())
 decodeString("{\"b\": 1}", option(field("a", String))); // right(Option.none())
 ```
-However, in this case `option` will silently ignore an unexpected type, while `optionalField` will fail
+However, in this case `option` will silently ignore the unexpected number, while `optionalField` will fail
 ``` java
 decodeString("{\"a\": 1}", optionalField("a", String)); // left("field 'a': expected String, got JNumber{value=1}")
 decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 ```
-In summation, `option` always succeeds even if the inner decoder fails while `optionalField` only succeeds if the field is missing or the field exists and the inner decoder succeeds as well.
 
 ## Loosely typed values
 `oneOf` attempts multiple decoders, `nullValue` returns a given value is `null` is found.
@@ -91,7 +116,7 @@ In summation, `option` always succeeds even if the inner decoder fails while `op
 decodeString(
     "[1, \"hello\", null]",
     list(oneOf(
-        Integer.map(i -> i.toString()),
+        Integer.map(i -> i.toString()), // we use `map` to turn `Integer` into a String decoder
         String,
         nullValue("<missing>"))));
 // right(List.of("1", "hello", "<missing>"))
@@ -101,11 +126,6 @@ decodeString(
 decodeString("[1, 2, null]", list(nullable(Integer))); // right(List.of(some(1), some(2), none()))
 ```
 
-## Enums
-Enums can be parsed by attempting to match a string exactly.
-``` java
-decodeString("\"ERA\"", enumByName(ChronoField.class)); // right(ChronoField.ERA)
-```
 ## Composing decoders with `andThen`
 
 `andThen` can be used to apply a decoder after another (to the same JSON value), here are some examples:
@@ -125,7 +145,10 @@ First we decode the object and test if it has a `ver`, then we pick a decoder ba
 
 Extending a decoder to validate decoded values:
 ``` java
-Decoder<String> nonEmptyString = String.andThen(str -> str.isEmpty() ? fail("empty string") : succeed(str));
+Decoder<String> nonEmptyString = String
+    .andThen(str -> str.isEmpty()
+        ? fail("empty string")
+        : succeed(str));
 
 decodeString("\"ok\"", nonEmptyString); // right("ok")
 decodeString("\"\"", nonEmptyString); // left("empty string")
