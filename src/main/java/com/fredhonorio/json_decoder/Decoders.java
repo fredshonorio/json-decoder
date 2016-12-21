@@ -121,6 +121,12 @@ public final class Decoders {
             .flatMap(val -> inner.apply(val).mapLeft(err -> "field '" + key + "': " + err));
     }
 
+    /**
+     * @see #oneOf(Seq)
+     * @param decoders
+     * @param <T>
+     * @return
+     */
     @SafeVarargs
     public static <T> Decoder<T> oneOf(Decoder<T>... decoders) {
         return oneOf(List.of(decoders));
