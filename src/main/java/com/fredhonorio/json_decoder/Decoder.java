@@ -7,18 +7,39 @@ import net.hamnaberg.json.Json;
 import java.util.function.Function;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
+/**
+ * A {@link Decoder<T>} is a function that takes a {@link net.hamnaberg.json.Json.JValue} and returns a {@code Either<String, T>}
+ * That is, it either gives a successfully decoded value or an error message.
+ */
 public interface Decoder<T> {
 
     Either<String, T> apply(Json.JValue value);
 
+    /**
+     * Applies a function to the decoded value, if it exists.
+     * @param f The function
+     * @param <U> The new type
+     * @return A new decoder of <code>U</code>
+     */
     default <U> Decoder<U> map(Function<T, U> f) {
         return x -> apply(x).map(f);
     }
 
+    /**
+     * Applies a function to the error, if it exists
+     * @param f The function
+     * @return A new decoder returning the altered error message
+     */
     default Decoder<T> mapError(Function<String, String> f) {
         return x -> apply(x).mapLeft(f);
     }
 
+    /**
+     * Creates a Decoder that depends on the result of this Decoder.
+     * @param f
+     * @param <U>
+     * @return
+     */
     default <U> Decoder<U> andThen(Function<T, Decoder<U>> f) {
         return x -> apply(x).flatMap(t -> f.apply(t).apply(x));
     }

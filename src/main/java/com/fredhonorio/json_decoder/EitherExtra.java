@@ -13,11 +13,28 @@ final class EitherExtra {
     private EitherExtra() {
     }
 
-    static <T> Either<String, T> ofOption(Option<T> s, String ifMissing) {
-        return s.map(Either::<String, T>right)
-            .getOrElse(left(ifMissing));
+    /**
+     * Returns a {@link javaslang.control.Either.Right} if the value exists, a {@link javaslang.control.Either.Left}
+     * with a given value otherwise.
+     * @param s
+     * @param ifMissing
+     * @param <L>
+     * @param <R>
+     * @return
+     */
+    static <L, R> Either<L, R> ofOption(Option<R> s, L ifMissing) {
+        return s.isDefined()
+            ? right(s.get())
+            : left(ifMissing);
     }
 
+    /**
+     * Returns the first {@link javaslang.control.Either.Left} or a list of all values on {@link javaslang.control.Either.Right}.
+     *
+     * @param res
+     * @param <T>
+     * @return
+     */
     // @formatter:off
     static <T> Either<String, Seq<T>> sequence(Seq<Either<String, T>> res) {
         return res.foldLeft(
@@ -31,6 +48,13 @@ final class EitherExtra {
     }
     // @formatter:on
 
+    /**
+     * Attempts a computation that can fail, returns either the value on the right or the contents of
+     * {@link Throwable#getMessage()} on the left.
+     * @param f
+     * @param <U>
+     * @return
+     */
     static <U> Either<String, U> tryEither(Try.CheckedSupplier<U> f) {
         return Try.of(f).toEither().mapLeft(Throwable::getMessage);
     }
