@@ -48,7 +48,6 @@ public class ReadmeTest {
         assertEquals(right("a"), r);
     }
 
-
     @Test
     public void dictionaries() {
         Object r;
@@ -62,7 +61,6 @@ public class ReadmeTest {
         Object r = decodeString("\"ERA\"", enumByName(ChronoField.class));
         assertEquals(right(ChronoField.ERA), r);
     }
-
 
     @Test
     public void map() {
