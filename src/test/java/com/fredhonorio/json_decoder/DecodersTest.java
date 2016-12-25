@@ -369,4 +369,10 @@ public class DecodersTest {
 
         assertValue(List.range(0, 8).mkString("[", ",", "]"), dec8, Tuple.of(0, 1, 2, 3, 4, 5, 6, 7));
     }
+
+    @Test
+    public void testOrElse() {
+        assertValue("1", Integer.orElse(String.map(java.lang.Integer::parseInt)), 1);
+        assertValue("1", String.map(java.lang.Integer::parseInt).orElse(Integer), 1);
+    }
 }

@@ -44,6 +44,10 @@ public interface Decoder<T> {
         return x -> apply(x).flatMap(t -> f.apply(t).apply(x));
     }
 
+    default Decoder<T> orElse(Decoder<T> other) {
+        return x -> apply(x).orElse(() -> other.apply(x));
+    }
+
     // generated
     // @formatter:off
      static <A, B, TT> Decoder<TT> map2(Decoder<A> dA, Decoder<B> dB, Function2<A, B, TT> f) {

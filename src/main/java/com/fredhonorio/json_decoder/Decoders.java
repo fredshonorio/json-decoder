@@ -59,9 +59,9 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Option<T>> option(Decoder<T> inner) {
-        return val -> inner.apply(val)
+        return inner
             .map(Option::of)
-            .orElse(right(Option.none()));
+            .orElse(succeed(Option.none()));
     }
 
     /**
@@ -89,9 +89,8 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Option<T>> nullable(Decoder<T> inner) {
-        return val -> JNull.apply(val)
-            .map(n -> Option.<T>none())
-            .orElse(() -> inner.apply(val).map(Option::some));
+        return nullValue(Option.<T>none())
+            .orElse(inner.map(Option::of));
     }
 
     /**
@@ -102,8 +101,7 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<T> nullValue(T defaultValue) {
-        return val -> JNull.apply(val)
-            .map(n -> defaultValue);
+        return JNull.map(n -> defaultValue);
     }
 
     /**
