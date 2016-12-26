@@ -14,36 +14,80 @@ import java.math.BigDecimal;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static com.fredhonorio.json_decoder.EitherExtra.*;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
-import static com.fredhonorio.json_decoder.EitherExtra.*;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 /**
- * Contains basic decoders and combinators.
+ * Contains basic decoders and combinators. A  @{code Decoder<T>} takes a {@link net.hamnaberg.json.Json.JValue} and
+ * attempts to return a <code>T</code>. If it succeeds it returns a <code>right(T)</code> otherwise a <code>left(String)</code>
+ * with an error message.
  */
 public final class Decoders {
     private Decoders() {
     }
 
+    /**
+     * Simply returns the {@link net.hamnaberg.json.Json.JValue}. Always succeeds.
+     */
     public static final Decoder<Json.JValue> Value = Either::right;
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JObject}.
+     */
     public static final Decoder<Json.JObject> JObject = v -> is(v, Json.JValue::isObject, Json.JValue::asJsonObject, "JObject");
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JArray}.
+     */
     public static final Decoder<Json.JArray> JArray = v -> is(v, Json.JValue::isArray, Json.JValue::asJsonArray, "JArray");
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNull}.
+     */
     public static final Decoder<Json.JNull> JNull = v -> is(v, Json.JValue::isNull, Json.JValue::asJsonNull, "JNull");
+
+    /**
+     * Decodes a {@link String}. Only succeeds if the {@link net.hamnaberg.json.Json.JValue} is a json string. Performs
+     * no coercion.
+     */
     public static final Decoder<String> String = v -> is(v, Json.JValue::isString, Json.JValue::asString, "String");
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link BigDecimal}.
+     */
     public static final Decoder<BigDecimal> BigDecimal = v -> is(v, Json.JValue::isNumber, Json.JValue::asBigDecimal, "BigDecimal");
+
+    /**
+     * Decodes a {@link Boolean}.
+     */
     public static final Decoder<Boolean> Boolean = v -> is(v, Json.JValue::isBoolean, Json.JValue::asBoolean, "Boolean");
 
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Float}.
+     */
     public static final Decoder<Float> Float = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::floatValue));
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Double}.
+     */
     public static final Decoder<Double> Double = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::doubleValue));
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Integer}.
+     */
     public static final Decoder<Integer> Integer = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::intValueExact));
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Long}.
+     */
     public static final Decoder<Long> Long = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::longValueExact));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray} and applies the given decoder to the members.
      *
      * @param inner The decoder for the members
-     * @param <T>
      * @return
      */
     public static <T> Decoder<Seq<T>> list(Decoder<T> inner) {
@@ -55,7 +99,6 @@ public final class Decoders {
      * Attempts to use the given decoder, but doesn't fail if it does.
      *
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<Option<T>> option(Decoder<T> inner) {
@@ -70,7 +113,6 @@ public final class Decoders {
      *
      * @param key   The name of the field
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<Option<T>> optionalField(String key, Decoder<T> inner) {
@@ -82,10 +124,9 @@ public final class Decoders {
     }
 
     /**
-     * Allows a value to be `null`.
+     * Allows a value to be <code>null</code>.
      *
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<Option<T>> nullable(Decoder<T> inner) {
@@ -97,7 +138,6 @@ public final class Decoders {
      * Returns a given value if the {@link net.hamnaberg.json.Json.JValue} is null.
      *
      * @param defaultValue
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> nullValue(T defaultValue) {
@@ -108,9 +148,8 @@ public final class Decoders {
      * Picks a field from a {@link net.hamnaberg.json.Json.JObject }and applies a given decoder. Fails if the
      * field doesn't exist.
      *
-     * @param key The name of the field
+     * @param key   The name of the field
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> field(String key, Decoder<T> inner) {
@@ -120,10 +159,9 @@ public final class Decoders {
     }
 
     /**
-     * @see #oneOf(Seq)
      * @param decoders
-     * @param <T>
      * @return
+     * @see #oneOf(Seq)
      */
     @SafeVarargs
     public static <T> Decoder<T> oneOf(Decoder<T>... decoders) {
@@ -134,7 +172,6 @@ public final class Decoders {
      * Attempts the given decoders until one succeeds.
      *
      * @param decoders
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> oneOf(Seq<Decoder<T>> decoders) {
@@ -146,8 +183,8 @@ public final class Decoders {
 
     /**
      * Succeeds with a given value.
+     *
      * @param value
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> succeed(T value) {
@@ -156,8 +193,8 @@ public final class Decoders {
 
     /**
      * Fails with a given error.
+     *
      * @param error
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> fail(String error) {
@@ -167,8 +204,8 @@ public final class Decoders {
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JObject} and applies a given decoder to each of the values, resulting in
      * a dictionary.
+     *
      * @param valueDecoder
-     * @param <T>
      * @return
      */
     public static <T> Decoder<Map<String, T>> dict(Decoder<T> valueDecoder) {
@@ -183,6 +220,7 @@ public final class Decoders {
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray} and accesses a position.
+     *
      * @param index
      * @return
      */
@@ -196,9 +234,9 @@ public final class Decoders {
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray} and accesses a position and applies a given decoder to the
      * array element.
+     *
      * @param index
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> index(int index, Decoder<T> inner) {
@@ -207,9 +245,9 @@ public final class Decoders {
 
     /**
      * Traverses an object tree and applies a decoder at the leaf.
+     *
      * @param fields
      * @param inner
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> at(Seq<String> fields, Decoder<T> inner) {
@@ -218,8 +256,8 @@ public final class Decoders {
 
     /**
      * Always returns a given {@code Either<String, T>}.
+     *
      * @param result
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> fromResult(Either<String, T> result) {
@@ -228,9 +266,9 @@ public final class Decoders {
 
     /**
      * Decodes a json string with a given decoder, uses Jackson.
+     *
      * @param json
      * @param decoder
-     * @param <T>
      * @return
      */
     public static <T> Either<String, T> decodeString(String json, Decoder<T> decoder) {
@@ -240,9 +278,9 @@ public final class Decoders {
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JValue}
+     *
      * @param json
      * @param decoder
-     * @param <T>
      * @return
      */
     public static <T> Either<String, T> decodeValue(Json.JValue json, Decoder<T> decoder) {
@@ -251,8 +289,8 @@ public final class Decoders {
 
     /**
      * Decodes an enum by matching a string with the exact value name.
+     *
      * @param enumClass
-     * @param <T>
      * @return
      */
     public static <T extends Enum<T>> Decoder<T> enumByName(Class<T> enumClass) {
@@ -265,8 +303,8 @@ public final class Decoders {
 
     /**
      * Builds a recursive decoder.
+     *
      * @param recursive
-     * @param <T>
      * @return
      */
     public static <T> Decoder<T> recursive(Function<Decoder<T>, Decoder<T>> recursive) {
