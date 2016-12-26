@@ -111,7 +111,7 @@ decodeString("{\"a\": 1}", option(field("a", String))); // right(Option.none())
 ```
 
 ## Loosely typed values
-`oneOf` attempts multiple decoders, `nullValue` returns a given value is `null` is found.
+`oneOf` attempts multiple decoders, `nullValue` returns a given value if `null` is found.
 ``` java
 decodeString(
     "[1, \"hello\", null]",
