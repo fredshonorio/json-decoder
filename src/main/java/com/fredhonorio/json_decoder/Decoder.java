@@ -2,9 +2,14 @@ package com.fredhonorio.json_decoder;
 
 import javaslang.*;
 import javaslang.control.Either;
+import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
+
+import static com.fredhonorio.json_decoder.EitherExtra.tryEither;
+import static javaslang.control.Either.left;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 /**
@@ -17,9 +22,6 @@ public interface Decoder<T> {
 
     /**
      * Applies a function to the decoded value, if it exists.
-     * @param f The function
-     * @param <U> The new type
-     * @return A new decoder of <code>U</code>
      */
     default <U> Decoder<U> map(Function<T, U> f) {
         return x -> apply(x).map(f);
@@ -27,8 +29,6 @@ public interface Decoder<T> {
 
     /**
      * Applies a function to the error, if it exists
-     * @param f The function
-     * @return A new decoder returning the altered error message
      */
     default Decoder<T> mapError(Function<String, String> f) {
         return x -> apply(x).mapLeft(f);
@@ -36,16 +36,43 @@ public interface Decoder<T> {
 
     /**
      * Creates a Decoder that depends on the result of this Decoder.
-     * @param f
-     * @param <U>
-     * @return
      */
     default <U> Decoder<U> andThen(Function<T, Decoder<U>> f) {
         return x -> apply(x).flatMap(t -> f.apply(t).apply(x));
     }
 
+    /**
+     * Applies this decoder first and another if this fails.
+     */
     default Decoder<T> orElse(Decoder<T> other) {
         return x -> apply(x).orElse(() -> other.apply(x));
+    }
+
+    /**
+     * Causes this decoder to fail if the given predicate is not true.
+     */
+    default Decoder<T> filter(Predicate<T> predicate, String ifMissing) {
+        return x -> apply(x).filter(predicate).getOrElse(left(ifMissing));
+    }
+
+    /**
+     * Attempts to transform the decoded value, fails with a given message if the transformation fails.
+     */
+    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, String ifFailed) {
+        return x -> apply(x).flatMap(y -> tryEither(() -> f.apply(y)).mapLeft(err -> ifFailed));
+    }
+
+
+    /**
+     * Attempts to transform the decoded value, fails if the transformation fails. Accepts a callback to produce an
+     * error depending on the exception.
+     */
+    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, Function<Throwable, String> ifFailed) {
+        return x -> apply(x).flatMap(y ->
+            Try.of(() -> f.apply(y))
+                .toEither()
+                .mapLeft(ifFailed)
+        );
     }
 
     // generated
