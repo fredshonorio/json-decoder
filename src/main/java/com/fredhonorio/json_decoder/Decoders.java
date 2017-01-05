@@ -301,6 +301,10 @@ public final class Decoders {
                 .getOrElse(Either.left("cannot parse " + json + " into a value of enum " + enumClass.getName())));
     }
 
+    public static <T> Decoder<T> equal(Decoder<T> decoder, T value) {
+        return decoder.filter(x -> x.equals(value), "expected value: '" + value + "'");
+    }
+
     /**
      * Builds a recursive decoder.
      *

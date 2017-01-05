@@ -1,16 +1,12 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.*;
+import javaslang.Tuple;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.control.Option;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
-import static com.fredhonorio.json_decoder.Decoder.map5;
-import static java.util.function.Predicate.isEqual;
-import static javaslang.control.Option.none;
-import static javaslang.control.Option.some;
 import static com.fredhonorio.json_decoder.Decoder.map2;
 import static com.fredhonorio.json_decoder.Decoders.*;
 import static com.fredhonorio.json_decoder.Decoders.Boolean;
@@ -21,6 +17,9 @@ import static com.fredhonorio.json_decoder.Decoders.Long;
 import static com.fredhonorio.json_decoder.Decoders.String;
 import static com.fredhonorio.json_decoder.Test.assertError;
 import static com.fredhonorio.json_decoder.Test.assertValue;
+import static java.util.function.Predicate.isEqual;
+import static javaslang.control.Option.none;
+import static javaslang.control.Option.some;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertTrue;
 
@@ -308,6 +307,30 @@ public class DecodersTest {
                 .put("y", true)).get();
 
         assertTrue(b instanceof Top.B);
+    }
+
+    @Test
+    public void testEqual() {
+
+        // a Decoder::andThen(Decoder<U>) could be nice, the extraneous `t` would be gone
+        Decoder<Integer> sumDecoder = field("type", equal(String, "add"))
+            .andThen(t ->
+                Decoder.map2(
+                    field("a", Integer),
+                    field("b", Integer),
+                    (a, b) -> a + b
+                )
+            );
+
+        assertValue(
+            "{\"type\":\"add\", \"a\": 3, \"b\": 6}",
+            sumDecoder,
+            9
+        );
+
+        assertError("{\"type\":\"div\", \"a\": 3, \"b\": 6}", sumDecoder,  "field 'type': expected value: 'add'");
+
+
     }
 
 
