@@ -1,7 +1,6 @@
 package com.fredhonorio.json_decoder;
 
 import javaslang.collection.List;
-import javaslang.collection.Seq;
 import org.junit.Test;
 
 import static com.fredhonorio.json_decoder.Decoders.String;
@@ -50,7 +49,7 @@ public class RecursiveTest {
         Decoder<Person> personDecoder = Decoders.recursive(self ->
             Decoder.map2(
                 field("name", String),
-                field("children", list(self)).map(Seq::toList),
+                field("children", list(self)),
                 Person::new));
 
         assertEquals(

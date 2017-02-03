@@ -25,7 +25,7 @@ decodeString("1", String); // left("expected String, got JNumber{value=1}")
 decodeString("\"string\"", String); // right("string")
 ```
 ## Arrays
-`list` decodes a JSON array and decodes every element with a given decoder. Returns a javaslang `Seq<T>`.
+`list` decodes a JSON array and decodes every element with a given decoder. Returns a javaslang `List<T>`.
 `index` decodes an array and picks the element at a given index.
 
 ``` java
@@ -164,7 +164,7 @@ or a successful decoder otherwise.
 // given this Tree:
 public class Tree<T> {
     final T v;
-    final Seq<Tree<T>> children;
+    final List<Tree<T>> children;
 	// constructor
 }
 
@@ -172,7 +172,7 @@ Decoder<Tree<Integer>> intTreeDecoder =
     recursive(self ->
         Decoder.map2(
             field("v", Integer),
-            optionalField("children", list(self)).map(optSeq -> optSeq.getOrElse(List.empty())),
+            optionalField("children", list(self)).map(optList -> optList.getOrElse(List.empty())),
             Tree::new));
 
 String json = "{ \"v\": 1" +
