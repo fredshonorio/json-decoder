@@ -2,7 +2,6 @@ package com.fredhonorio.json_decoder;
 
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
-import javaslang.collection.Seq;
 import javaslang.control.Option;
 import org.junit.Test;
 
@@ -206,9 +205,9 @@ public class ReadmeTest {
     @SuppressWarnings("EqualsHashCode") // hashCode() is never called
     static class Tree<T> {
         final T value;
-        final Seq<Tree<T>> children;
+        final List<Tree<T>> children;
 
-        Tree(T value, Seq<Tree<T>> children) {
+        Tree(T value, List<Tree<T>> children) {
             this.value = value;
             this.children = children;
         }
@@ -237,7 +236,7 @@ public class ReadmeTest {
             recursive(self ->
                 Decoder.map2(
                     field("value", Integer),
-                    optionalField("children", list(self)).map(optSeq -> optSeq.getOrElse(empty())),
+                    optionalField("children", list(self)).map(optList -> optList.getOrElse(empty())),
                     Tree::new));
 
         String json = "{ \"value\": 1" +

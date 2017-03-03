@@ -4,7 +4,6 @@ import javaslang.Tuple;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.collection.Map;
-import javaslang.collection.Seq;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
@@ -91,7 +90,7 @@ public final class Decoders {
      * @param inner The decoder for the members
      * @return
      */
-    public static <T> Decoder<Seq<T>> list(Decoder<T> inner) {
+    public static <T> Decoder<List<T>> list(Decoder<T> inner) {
         return val -> JArray.apply(val)
             .flatMap(arr -> sequence(arr.mapToList(inner::apply)).mapLeft(err -> "array element: " + err));
     }
@@ -162,7 +161,7 @@ public final class Decoders {
     /**
      * @param decoders
      * @return
-     * @see #oneOf(Seq)
+     * @see #oneOf(List)
      */
     @SafeVarargs
     public static <T> Decoder<T> oneOf(Decoder<T>... decoders) {
@@ -175,7 +174,7 @@ public final class Decoders {
      * @param decoders
      * @return
      */
-    public static <T> Decoder<T> oneOf(Seq<Decoder<T>> decoders) {
+    public static <T> Decoder<T> oneOf(List<Decoder<T>> decoders) {
         return obj -> decoders.foldLeft(
             left("no decoders given"),
             (z, x) -> z.orElse(x.apply(obj))
@@ -251,7 +250,7 @@ public final class Decoders {
      * @param inner
      * @return
      */
-    public static <T> Decoder<T> at(Seq<String> fields, Decoder<T> inner) {
+    public static <T> Decoder<T> at(List<String> fields, Decoder<T> inner) {
         return fields.foldRight(inner, Decoders::field);
     }
 
