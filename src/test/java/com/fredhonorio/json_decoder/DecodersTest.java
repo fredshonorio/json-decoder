@@ -347,7 +347,10 @@ public class DecodersTest {
             tryDecodeValue(Json.jNumber(1), Decoders.Integer)
         );
 
-
+        assertEquals(
+            "expected String, got JNumber{value=1}",
+            tryDecodeString("1", Decoders.String).failed().get().getMessage()
+        );
     }
 
 }
