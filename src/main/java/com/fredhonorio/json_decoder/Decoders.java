@@ -7,6 +7,7 @@ import javaslang.collection.Map;
 import javaslang.collection.Seq;
 import javaslang.control.Either;
 import javaslang.control.Option;
+import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 import net.hamnaberg.json.io.JacksonStreamingParser;
 
@@ -285,6 +286,28 @@ public final class Decoders {
      */
     public static <T> Either<String, T> decodeValue(Json.JValue json, Decoder<T> decoder) {
         return decoder.apply(json);
+    }
+
+    /**
+     * Decodes a json string with a given decoder, uses Jackson. Returns the result in a {@link Try}
+     * @param json
+     * @param decoder
+     * @return
+     */
+    public static <T> Try<T> tryDecodeString(String json, Decoder<T> decoder) {
+        return Try.of(() -> new JacksonStreamingParser().parse(json))
+            .flatMap(j -> tryDecodeValue(j, decoder));
+    }
+
+    /**
+     * Decodes a {@link net.hamnaberg.json.Json.JValue} with a given decoder. Returns the result in a {@link Try}
+     * @param json
+     * @param decoder
+     * @param <T>
+     * @return
+     */
+    public static <T> Try<T> tryDecodeValue(Json.JValue json, Decoder<T> decoder) {
+        return EitherExtra.toTry(decoder.apply(json));
     }
 
     /**

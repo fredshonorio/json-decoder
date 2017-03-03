@@ -4,6 +4,7 @@ import javaslang.Tuple;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.control.Option;
+import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
@@ -21,6 +22,7 @@ import static java.util.function.Predicate.isEqual;
 import static javaslang.control.Option.none;
 import static javaslang.control.Option.some;
 import static net.hamnaberg.json.Json.jObject;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DecodersTest {
@@ -329,9 +331,23 @@ public class DecodersTest {
         );
 
         assertError("{\"type\":\"div\", \"a\": 3, \"b\": 6}", sumDecoder,  "field 'type': expected value: 'add'");
+    }
+
+    @Test
+    public void testTry() {
+        Try<java.lang.Integer> ONE = Try.success(1);
+
+        assertEquals(
+            ONE,
+            tryDecodeString("1", Decoders.Integer)
+        );
+
+        assertEquals(
+            ONE,
+            tryDecodeValue(Json.jNumber(1), Decoders.Integer)
+        );
 
 
     }
-
 
 }

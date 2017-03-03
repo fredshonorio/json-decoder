@@ -58,4 +58,19 @@ final class EitherExtra {
     static <U> Either<String, U> tryEither(Try.CheckedSupplier<U> f) {
         return Try.of(f).toEither().mapLeft(Throwable::getMessage);
     }
+
+    /**
+     * Transforms an Either&lt;String, T&gt; into a {@link Try}. The exception (if applicable) is a {@link IllegalArgumentException}
+     * with the right side as the message.
+     *
+     * @param e
+     * @param <T>
+     * @return
+     */
+    static <T> Try<T> toTry(Either<String, T> e) {
+        return e.fold(
+            fail -> Try.failure(new IllegalArgumentException(fail)),
+            Try::success
+        );
+    }
 }
