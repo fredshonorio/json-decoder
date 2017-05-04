@@ -44,6 +44,7 @@ public interface Decoder<T> {
     /**
      * Applies this decoder first and another if this fails.
      */
+    @Deprecated // oneOf is preferred because it has better messages
     default Decoder<T> orElse(Decoder<T> other) {
         return x -> apply(x).orElse(() -> other.apply(x));
     }
@@ -61,7 +62,6 @@ public interface Decoder<T> {
     default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, String ifFailed) {
         return x -> apply(x).flatMap(y -> tryEither(() -> f.apply(y)).mapLeft(err -> ifFailed));
     }
-
 
     /**
      * Attempts to transform the decoded value, fails if the transformation fails. Accepts a callback to produce an

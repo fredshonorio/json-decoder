@@ -177,10 +177,23 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<T> oneOf(List<Decoder<T>> decoders) {
-        return obj -> decoders.foldLeft(
-            left("no decoders given"),
-            (z, x) -> z.orElse(x.apply(obj))
-        );
+
+        return val -> {
+            Stream<Either<java.lang.String, T>> results = decoders
+                .toStream()
+                .map(d -> d.apply(val));
+
+            if (results.isEmpty())
+                return left("no decoders given");
+
+            return results
+                .find(Either::isRight)
+                .getOrElse(() -> left(
+                    results
+                        .map(Either::getLeft)
+                        .prepend("Attempted multiple decoders, all failed:")
+                        .mkString("\n\t - ")));
+        };
     }
 
     /**
@@ -291,6 +304,7 @@ public final class Decoders {
 
     /**
      * Decodes a json string with a given decoder, uses Jackson. Returns the result in a {@link Try}
+     *
      * @param json
      * @param decoder
      * @return
@@ -302,6 +316,7 @@ public final class Decoders {
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JValue} with a given decoder. Returns the result in a {@link Try}
+     *
      * @param json
      * @param decoder
      * @param <T>

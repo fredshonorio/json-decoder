@@ -227,6 +227,57 @@ public class DecodersTest {
 
         assertEquals(3, count.get());
     }
+
+    @Test
+    public void testOneOf() {
+
+        Decoder<java.lang.Integer> wonkyInt = oneOf(Integer, String.mapTry(java.lang.Integer::parseInt, "noo"), nullValue(0));
+
+        assertValue(
+            "\"1\"",
+            wonkyInt,
+            1
+        );
+
+        assertError(
+            "\"a\"",
+            wonkyInt,
+            "Attempted multiple decoders, all failed:\n" +
+                "\t - expected BigDecimal, got JString{value='a'}\n" +
+                "\t - noo\n" +
+                "\t - expected JNull, got JString{value='a'}"
+        );
+
+        // here we're testing laziness in oneOf, we don't expect both decoders to run if the first succeeds
+
+        AtomicInteger secondDecoderUses = new AtomicInteger();
+
+        Decoder<Integer> effectfulDecoder = oneOf(
+            Integer,
+            String.andThen(i -> {
+                secondDecoderUses.incrementAndGet();
+                return succeed(i);
+            })
+                .mapTry(java.lang.Integer::parseInt, "bloop")
+        );
+
+        assertValue(
+            "[1, 2, 3, 4, 5]",
+            list(effectfulDecoder),
+            List.rangeClosed(1, 5)
+        );
+
+        assertEquals(0, secondDecoderUses.get());
+
+        assertError(
+            "[1, \"a\", \"b\", 4, 5]",
+            list(effectfulDecoder),
+            "array element: Attempted multiple decoders, all failed:\n" +
+                "\t - expected BigDecimal, got JString{value='a'}\n" +
+                "\t - bloop"
+        );
+
+        assertEquals(1, secondDecoderUses.get());
     }
 
     @Test
