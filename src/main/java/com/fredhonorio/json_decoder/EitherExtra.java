@@ -1,6 +1,7 @@
 package com.fredhonorio.json_decoder;
 
 import javaslang.collection.List;
+import javaslang.collection.Seq;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
@@ -15,6 +16,7 @@ public final class EitherExtra {
     /**
      * Returns a {@link javaslang.control.Either.Right} if the value exists, a {@link javaslang.control.Either.Left}
      * with a given value otherwise.
+     *
      * @param s
      * @param ifMissing
      * @param <L>
@@ -36,21 +38,20 @@ public final class EitherExtra {
      * @return
      */
     // @formatter:off
-    static <L, T> Either<L, List<T>> sequence(List<Either<L, T>> res) {
-        return res.foldLeft(
-            right(List.<T>empty()),
-            (z, x) ->
-                z.isLeft()
-                    ? z
-                    : x.isLeft()
-                        ? left(x.getLeft())
-                        : right(z.get().append(x.get())));
+    static <L, T> Either<L, List<T>> sequence(Seq<Either<L, T>> res) {
+        Option<Either<L,T>> failure = res.find(Either::isLeft);
+        if (failure.isDefined()) {
+            return left(failure.get().getLeft());
+        } else {
+            return right(res.map(Either::get).toList());
+        }
     }
     // @formatter:on
 
     /**
      * Attempts a computation that can fail, returns either the value on the right or the contents of
      * {@link Throwable#getMessage()} on the left.
+     *
      * @param f
      * @param <U>
      * @return

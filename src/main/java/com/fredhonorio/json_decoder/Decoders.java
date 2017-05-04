@@ -4,6 +4,7 @@ import javaslang.Tuple;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.collection.Map;
+import javaslang.collection.Stream;
 import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
@@ -92,7 +93,8 @@ public final class Decoders {
      */
     public static <T> Decoder<List<T>> list(Decoder<T> inner) {
         return val -> JArray.apply(val)
-            .flatMap(arr -> sequence(arr.mapToList(inner::apply)).mapLeft(err -> "array element: " + err));
+            .map(Stream::ofAll)
+            .flatMap(arr -> sequence(arr.map(inner::apply)).mapLeft(err -> "array element: " + err));
     }
 
     /**

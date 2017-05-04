@@ -8,6 +8,8 @@ import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static com.fredhonorio.json_decoder.Decoder.map2;
 import static com.fredhonorio.json_decoder.Decoders.*;
 import static com.fredhonorio.json_decoder.Decoders.Boolean;
@@ -201,6 +203,30 @@ public class DecodersTest {
             "array element: expected BigDecimal, got JString{value='1'}"
         );
 
+        // here we test laziness in list, we don't expect all subsequent items to be tested if a given item fails
+
+        AtomicInteger count = new AtomicInteger(0);
+        Decoder<java.lang.Integer> countIntDecoder = Decoders.Value.andThen(x -> {
+            count.incrementAndGet();
+            return Integer;
+        });
+
+        decodeString(
+            List.range(0, 5).mkString("[", ",", "]"),
+            list(countIntDecoder)
+        );
+
+        assertEquals(5, count.get());
+
+        count.set(0);
+
+        decodeString(
+            List.of(1, 2, "false", 3, 4, 5).mkString("[", ",", "]"),
+            list(countIntDecoder)
+        );
+
+        assertEquals(3, count.get());
+    }
     }
 
     @Test
