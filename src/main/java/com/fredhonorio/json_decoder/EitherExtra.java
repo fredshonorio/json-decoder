@@ -8,7 +8,7 @@ import javaslang.control.Try;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 
-final class EitherExtra {
+public final class EitherExtra {
     private EitherExtra() {
     }
 
@@ -31,11 +31,12 @@ final class EitherExtra {
      * Returns the first {@link javaslang.control.Either.Left} or a list of all values on {@link javaslang.control.Either.Right}.
      *
      * @param res
+     * @param <L>
      * @param <T>
      * @return
      */
     // @formatter:off
-    static <T> Either<String, List<T>> sequence(List<Either<String, T>> res) {
+    static <L, T> Either<L, List<T>> sequence(List<Either<L, T>> res) {
         return res.foldLeft(
             right(List.<T>empty()),
             (z, x) ->
