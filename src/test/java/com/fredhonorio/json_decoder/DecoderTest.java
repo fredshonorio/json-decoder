@@ -104,4 +104,10 @@ public class DecoderTest {
         assertError("\"\"", fail, "can't work");
     }
 
+    @Test
+    public void widen() {
+        Decoder<Number> num = Decoder.widen(Integer);
+        assertValue("1", num, 1);
+    }
+
 }

@@ -89,6 +89,17 @@ public interface Decoder<T> {
         );
     }
 
+    /**
+     * Widen a decoder to looser type.
+     * @param dec The decoder
+     * @param <T> The wide type
+     * @param <U> The narrow type
+     * @return
+     */
+    static <T, U extends T> Decoder<T> widen(Decoder<U> dec) {
+        return (Decoder<T>) dec;
+    }
+
     // generated
     // @formatter:off
      static <A, B, TT> Decoder<TT> map2(Decoder<A> dA, Decoder<B> dB, Function2<A, B, TT> f) {
