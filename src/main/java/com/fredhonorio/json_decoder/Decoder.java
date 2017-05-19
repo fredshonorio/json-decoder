@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import static com.fredhonorio.json_decoder.EitherExtra.tryEither;
 import static javaslang.control.Either.left;
+import static javaslang.control.Either.right;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 /**
@@ -54,6 +55,19 @@ public interface Decoder<T> {
      */
     default Decoder<T> filter(Predicate<T> predicate, String ifMissing) {
         return x -> apply(x).filter(predicate).getOrElse(left(ifMissing));
+    }
+
+    /**
+     * Causes this decoder to fail if the given predicate is not true.
+     */
+    default Decoder<T> filter(Predicate<T> predicate, Function<T, String> ifMissing) {
+        return x -> apply(x)
+            .fold(
+                Either::left,
+                ok ->
+                    predicate.test(ok)
+                        ? right(ok)
+                        : left(ifMissing.apply(ok)));
     }
 
     /**
