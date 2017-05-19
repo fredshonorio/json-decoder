@@ -151,6 +151,18 @@ public class DecodersTest {
             optionalField("b", String),
             Option.none()
         );
+
+        // option with default value
+        Decoder<Integer> optionWithDefault = option(Integer, 0);
+        assertValue("1", optionWithDefault, 1);
+        assertValue("null", optionWithDefault, 0);
+        assertValue("{}", optionWithDefault, 0);
+
+        // optionalField with default value
+        Decoder<String> optionalFieldWithDefault = optionalField("a", String, "default");
+        assertValue("{ \"a\": \"1\" }", optionalFieldWithDefault, "1");
+        assertValue("{}", optionalFieldWithDefault, "default");
+        assertError("{ \"a\": 1 }", optionalFieldWithDefault, "field 'a': expected String, got JNumber{value=1}");
     }
 
     @Test
@@ -309,6 +321,14 @@ public class DecodersTest {
         assertError("true", nullable(Integer), "Attempted multiple decoders, all failed:\n" +
             "\t - expected BigDecimal, got JBoolean{value=true}\n" +
             "\t - expected JNull, got JBoolean{value=true}");
+
+        // nullable with default
+        Decoder<Integer> nullableWithDefault = nullable(Integer, 0);
+        assertValue("1", nullableWithDefault, 1);
+        assertValue("null", nullableWithDefault, 0);
+        assertError("\"a\"", nullableWithDefault, "Attempted multiple decoders, all failed:\n" +
+            "\t - expected BigDecimal, got JString{value='a'}\n" +
+            "\t - expected JNull, got JString{value='a'}");
     }
 
     @Test

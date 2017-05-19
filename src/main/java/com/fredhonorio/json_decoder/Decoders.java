@@ -111,6 +111,18 @@ public final class Decoders {
     }
 
     /**
+     * Attempts to use the given decoder, returns a given value if the decoder fails.
+     *
+     * @param decoder The decoder to use
+     * @param otherwise The default value to use if the decoder fails
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> option(Decoder<T> decoder, T otherwise) {
+        return oneOf(decoder, succeed(otherwise));
+    }
+
+    /**
      * Attempts to pick a field from an {@link net.hamnaberg.json.Json.JObject} and applies a given decoder.
      * Succeeds if the field does not exist but still fails if the inner decoder fails.
      *
@@ -127,6 +139,20 @@ public final class Decoders {
     }
 
     /**
+     * Attempts to pick a field from an {@link net.hamnaberg.json.Json.JObject} and applies a given decoder.
+     * Returns a default value if the field doesn't exist. The decoder will still fail if the field exists but is invalid.
+     *
+     * @param key The name of the field
+     * @param inner The decoder for the value in the field
+     * @param otherwise The default value
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> optionalField(String key, Decoder<T> inner, T otherwise) {
+        return optionalField(key, inner).map(v -> v.getOrElse(otherwise));
+    }
+
+    /**
      * Allows a value to be <code>null</code>.
      *
      * @param inner
@@ -136,6 +162,21 @@ public final class Decoders {
         return oneOf(
             inner.map(Option::of),
             nullValue(Option.<T>none())
+        );
+    }
+
+    /**
+     * Allows a value to be <code>null</code>. If it is then the given default value is used.
+     *
+     * @param decoder The decoder to use
+     * @param ifNull The default value
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> nullable(Decoder<T> decoder, T ifNull) {
+        return oneOf(
+            decoder,
+            nullValue(ifNull)
         );
     }
 
