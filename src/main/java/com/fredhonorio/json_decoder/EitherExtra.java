@@ -38,7 +38,7 @@ public final class EitherExtra {
      * @return
      */
     // @formatter:off
-    static <L, T> Either<L, List<T>> sequence(Seq<Either<L, T>> res) {
+    public static <L, T> Either<L, List<T>> sequence(Seq<Either<L, T>> res) {
         Option<Either<L,T>> failure = res.find(Either::isLeft);
         if (failure.isDefined()) {
             return left(failure.get().getLeft());
