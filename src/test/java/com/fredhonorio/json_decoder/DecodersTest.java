@@ -278,6 +278,9 @@ public class DecodersTest {
         );
 
         assertEquals(1, secondDecoderUses.get());
+
+        // empty list of decoder fails
+        assertError("null", oneOf(List.empty()), "no decoders given");
     }
 
     @Test
