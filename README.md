@@ -193,7 +193,7 @@ repositories {
 	jcenter()
 }
 
-compile 'com.fredhonorio:json-decoder:1.0.2'
+compile 'com.fredhonorio:json-decoder:1.0.3'
 ```
 
 # Dependencies
