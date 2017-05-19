@@ -306,7 +306,9 @@ public class DecodersTest {
     public void testNullable() {
         assertValue("1", nullable(Integer), Option.of(1));
         assertValue("null", nullable(Integer), Option.none());
-        assertError("true", nullable(Integer), "expected BigDecimal, got JBoolean{value=true}");
+        assertError("true", nullable(Integer), "Attempted multiple decoders, all failed:\n" +
+            "\t - expected BigDecimal, got JBoolean{value=true}\n" +
+            "\t - expected JNull, got JBoolean{value=true}");
     }
 
     @Test
