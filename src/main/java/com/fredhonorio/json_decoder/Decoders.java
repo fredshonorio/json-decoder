@@ -9,7 +9,7 @@ import javaslang.control.Either;
 import javaslang.control.Option;
 import javaslang.control.Try;
 import net.hamnaberg.json.Json;
-import net.hamnaberg.json.io.JacksonStreamingParser;
+import net.hamnaberg.json.jackson.JacksonStreamingParser;
 
 import java.math.BigDecimal;
 import java.util.function.Function;

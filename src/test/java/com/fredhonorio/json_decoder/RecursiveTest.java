@@ -35,15 +35,15 @@ public class RecursiveTest {
     public void testRecursive() {
 
         JObject family = jObject(
-            entry("name", "grandpa"),
-            entry("children",
+            tuple("name", "grandpa"),
+            tuple("children",
                 jArray(
                     jObject(
-                        entry("name", "father"),
-                        entry("children",
+                        tuple("name", "father"),
+                        tuple("children",
                             jArray(
-                                jObject(entry("name", "son"), entry("children", jEmptyArray())),
-                                jObject(entry("name", "daughter"), entry("children", jEmptyArray()))
+                                jObject(tuple("name", "son"), tuple("children", jEmptyArray())),
+                                jObject(tuple("name", "daughter"), tuple("children", jEmptyArray()))
                             ))))));
 
         Decoder<Person> personDecoder = Decoders.recursive(self ->
