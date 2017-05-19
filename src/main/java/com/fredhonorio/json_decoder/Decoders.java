@@ -104,9 +104,10 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Option<T>> option(Decoder<T> inner) {
-        return inner
-            .map(Option::of)
-            .orElse(succeed(Option.none()));
+        return oneOf(
+            inner.map(Option::of),
+            succeed(Option.none())
+        );
     }
 
     /**
@@ -132,8 +133,10 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Option<T>> nullable(Decoder<T> inner) {
-        return nullValue(Option.<T>none())
-            .orElse(inner.map(Option::of));
+        return oneOf(
+            inner.map(Option::of),
+            nullValue(Option.<T>none())
+        );
     }
 
     /**
