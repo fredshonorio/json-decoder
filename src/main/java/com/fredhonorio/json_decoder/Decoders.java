@@ -384,8 +384,26 @@ public final class Decoders {
                 .getOrElse(Either.left("cannot parse " + json + " into a value of enum " + enumClass.getName())));
     }
 
+    /**
+     * This decoder is successful if the given decoder succeeds and the decoded value equals a given value.
+     * @param decoder The decoder
+     * @param value The value to match against
+     * @param <T>
+     * @return
+     */
     public static <T> Decoder<T> equal(Decoder<T> decoder, T value) {
-        return decoder.filter(x -> x.equals(value), "expected value: '" + value + "'");
+        return decoder.filter(x -> x.equals(value), v -> "expected value: '" + value + "', got '" + v + "'");
+    }
+
+    /**
+     * This decoder is successful if the given decoder succeeds and the decoded value matches a predicate.
+     * @param decoder The decoder
+     * @param test The predicate to test the decoded value
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> matches(Decoder<T> decoder, Predicate<T> test) {
+        return decoder.filter(test, v -> "the value '" + v + "' doesn't match the predicate");
     }
 
     /**

@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DecodersTest {
 
+
     @Test
     public void testNumbers() {
         assertValue("1", Integer, 1);
@@ -432,7 +433,16 @@ public class DecodersTest {
             9
         );
 
-        assertError("{\"type\":\"div\", \"a\": 3, \"b\": 6}", sumDecoder,  "field 'type': expected value: 'add'");
+        assertError("{\"type\":\"div\", \"a\": 3, \"b\": 6}", sumDecoder,  "field 'type': expected value: 'add', got 'div'");
+    }
+
+    @Test
+    public void testMatches() {
+        Decoder<Integer> positive = matches(Integer, i -> i > 0);
+
+        assertValue("1", positive, 1);
+        assertError("null", positive, "expected BigDecimal, got JNull");
+        assertError("0", positive, "the value '0' doesn't match the predicate");
     }
 
     @Test
