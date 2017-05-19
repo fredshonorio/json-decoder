@@ -385,6 +385,21 @@ public final class Decoders {
     }
 
     /**
+     * Decodes a value and applies a given mapping. Fails if the mapping does not have a corresponding value for the decoded value.
+     * @param decoder The decoder
+     * @param mapping The mapping
+     * @param <T>
+     * @param <U>
+     * @return
+     */
+    public static <T, U> Decoder<U> mapping(Decoder<T> decoder, Function<T, Option<U>> mapping) {
+        return decoder.andThen(t -> mapping.apply(t)
+            .map(Decoders::succeed)
+            .getOrElse(fail("Cannot find mapping for " + t))
+        );
+    }
+
+    /**
      * This decoder is successful if the given decoder succeeds and the decoded value equals a given value.
      * @param decoder The decoder
      * @param value The value to match against

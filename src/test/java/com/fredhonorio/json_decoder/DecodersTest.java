@@ -9,6 +9,7 @@ import net.hamnaberg.json.Json;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static com.fredhonorio.json_decoder.Decoder.map2;
 import static com.fredhonorio.json_decoder.Decoders.*;
@@ -371,6 +372,18 @@ public class DecodersTest {
     public void testEnum() {
         assertValue("\"A\"", enumByName(X.class), X.A);
         assertError("\"C\"", enumByName(X.class), "cannot parse JString{value='C'} into a value of enum com.fredhonorio.json_decoder.DecodersTest$X");
+    }
+
+    @Test
+    public void testMapping() {
+
+        Function<Float, Option<Integer>> toIntRange = f -> Option.when(f >= 0 && f < 10, f).map(Math::round);
+        Decoder<Integer> intRangeDec = Decoders.mapping(Float, toIntRange);
+
+        assertValue("0.4", intRangeDec, 0);
+        assertValue("0.5", intRangeDec, 1);
+        assertError("20.0", intRangeDec, "Cannot find mapping for 20.0");
+        assertError("\"20\"", intRangeDec, "expected BigDecimal, got JString{value='20'}");
     }
 
     public static abstract class Top {
