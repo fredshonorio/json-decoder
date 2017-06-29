@@ -170,7 +170,7 @@ public class DecodersTest {
     @Test
     public void testList() {
         assertValue("[1, 2 ,3]", list(Integer), List.of(1, 2, 3));
-        assertError("[1, \"2\" ,3]", list(Integer), "array element: expected BigDecimal, got JString{value='2'}");
+        assertError("[1, \"2\" ,3]", list(Integer), "array element #1: expected BigDecimal, got JString{value='2'}");
 
         assertValue(
             "[ {\"a\": 1}" +
@@ -214,7 +214,7 @@ public class DecodersTest {
         assertError(
             "[ 1, \"1\" ]",
             list(Integer.map(Object::toString)),
-            "array element: expected BigDecimal, got JString{value='1'}"
+            "array element #1: expected BigDecimal, got JString{value='1'}"
         );
 
         // here we test laziness in list, we don't expect all subsequent items to be tested if a given item fails
@@ -286,7 +286,7 @@ public class DecodersTest {
         assertError(
             "[1, \"a\", \"b\", 4, 5]",
             list(effectfulDecoder),
-            "array element: Attempted multiple decoders, all failed:\n" +
+            "array element #1: Attempted multiple decoders, all failed:\n" +
                 "\t - expected BigDecimal, got JString{value='a'}\n" +
                 "\t - bloop"
         );

@@ -1,6 +1,7 @@
 package com.fredhonorio.json_decoder;
 
 import javaslang.Tuple;
+import javaslang.Tuple2;
 import javaslang.collection.HashMap;
 import javaslang.collection.List;
 import javaslang.collection.Map;
@@ -94,7 +95,11 @@ public final class Decoders {
     public static <T> Decoder<List<T>> list(Decoder<T> inner) {
         return val -> JArray.apply(val)
             .map(Stream::ofAll)
-            .flatMap(arr -> sequence(arr.map(inner::apply)).mapLeft(err -> "array element: " + err));
+            .flatMap(s ->
+                s.zipWithIndex()
+                    .map(t -> t.transform((j, idx) -> inner.mapError(err -> "array element #" + idx + ": " + err).apply(j)))
+                    .transform(EitherExtra::sequence)
+            );
     }
 
     /**
