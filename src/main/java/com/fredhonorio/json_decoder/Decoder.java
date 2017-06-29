@@ -71,6 +71,13 @@ public interface Decoder<T> {
     }
 
     /**
+     * Attempts to transform the decoded value, fails with a the message of the thrown exception.
+     */
+    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f) {
+        return mapTry(f, Throwable::getMessage);
+    }
+
+    /**
      * Attempts to transform the decoded value, fails with a given message if the transformation fails.
      */
     default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, String ifFailed) {

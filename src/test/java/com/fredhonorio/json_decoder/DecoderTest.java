@@ -102,6 +102,11 @@ public class DecoderTest {
             .mapTry(s -> { throw new RuntimeException("can't work"); }, Throwable::getMessage);
 
         assertError("\"\"", fail, "can't work");
+
+        Decoder<String> fail2 = String
+            .mapTry(s -> { throw new RuntimeException("can't work"); });
+
+        assertError("\"\"", fail, "can't work");
     }
 
     @Test
