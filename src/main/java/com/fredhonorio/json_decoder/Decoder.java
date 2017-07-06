@@ -99,11 +99,10 @@ public interface Decoder<T> {
     /**
      * Widen a decoder to looser type.
      * @param dec The decoder
-     * @param <T> The wide type
-     * @param <U> The narrow type
+     * @param <T> The narrow type
      * @return
      */
-    static <T, U extends T> Decoder<T> widen(Decoder<U> dec) {
+    static <T> Decoder<T> widen(Decoder<? extends T> dec) {
         return (Decoder<T>) dec;
     }
 
