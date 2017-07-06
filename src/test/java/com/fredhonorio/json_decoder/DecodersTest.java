@@ -352,11 +352,16 @@ public class DecodersTest {
             Json.jNumber(1)
         );
 
+        assertError("[false]", index(1), "at index 1: missing");
+
         assertValue(
             "[0, 1]",
             index(1, Integer),
             1
         );
+
+        assertError("[]", index(0, Integer), "at index 0: missing");
+        assertError("[false]", index(0, Integer), "at index 0: expected BigDecimal, got JBoolean{value=false}");
     }
 
     @Test

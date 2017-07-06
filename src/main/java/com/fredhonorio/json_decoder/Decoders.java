@@ -289,10 +289,7 @@ public final class Decoders {
      * @return
      */
     public static Decoder<Json.JValue> index(int index) {
-        return JArray
-            .andThen(arr -> arr.get(index)
-                .map(Decoders::succeed)
-                .getOrElse(fail("no element at index " + index)));
+        return index(index, Value);
     }
 
     /**
@@ -304,7 +301,11 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<T> index(int index, Decoder<T> inner) {
-        return index(index).andThen(item -> fromResult(inner.apply(item)));
+        return JArray
+            .andThen(arr -> arr.get(index)
+                .map(v -> fromResult(inner.apply(v)))
+                .getOrElse(fail("missing")))
+            .mapError(err -> "at index " + index + ": " + err);
     }
 
     /**
