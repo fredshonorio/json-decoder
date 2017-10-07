@@ -1,5 +1,6 @@
 package com.fredhonorio.json_decoder;
 
+import com.fredhonorio.json_decoder.schema.JsonSchema;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import javaslang.collection.HashMap;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static com.fredhonorio.json_decoder.Decoder.withSchema;
 import static com.fredhonorio.json_decoder.EitherExtra.*;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
@@ -54,7 +56,7 @@ public final class Decoders {
      * Decodes a {@link String}. Only succeeds if the {@link net.hamnaberg.json.Json.JValue} is a json string. Performs
      * no coercion.
      */
-    public static final Decoder<String> String = v -> is(v, Json.JValue::isString, Json.JValue::asString, "String");
+    public static final Decoder<String> String = withSchema(v -> is(v, Json.JValue::isString, Json.JValue::asString, "String"), new JsonSchema.Lit(JsonSchema.Lit.Type.STRING));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link BigDecimal}.
@@ -93,13 +95,15 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<List<T>> list(Decoder<T> inner) {
-        return val -> JArray.apply(val)
+        Decoder<List<T>> l = val -> JArray.apply(val)
             .map(Stream::ofAll)
             .flatMap(s ->
                 s.zipWithIndex()
                     .map(t -> t.transform((j, idx) -> inner.mapError(err -> "array element #" + idx + ": " + err).apply(j)))
                     .transform(EitherExtra::sequence)
             );
+
+        return l.setSchema(new JsonSchema.Array(inner.schema()));
     }
 
     /**
@@ -204,9 +208,11 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<T> field(String key, Decoder<T> inner) {
-        return root -> JObject.apply(root)
+        Decoder<T> field = root -> JObject.apply(root)
             .flatMap(val -> ofOption(val.get(key), "field '" + key + "': missing"))
             .flatMap(val -> inner.apply(val).mapLeft(err -> "field '" + key + "': " + err));
+
+        return field.setSchema(new JsonSchema.Field(key, inner.schema()));
     }
 
     /**

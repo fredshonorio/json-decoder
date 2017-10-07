@@ -1,7 +1,10 @@
 package com.fredhonorio.json_decoder;
 
+import com.fredhonorio.json_decoder.schema.JsonSchema;
 import javaslang.*;
+import javaslang.collection.List;
 import javaslang.control.Either;
+import javaslang.control.Option;
 import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 
@@ -20,6 +23,34 @@ import static javaslang.control.Either.right;
 public interface Decoder<T> {
 
     Either<String, T> apply(Json.JValue value);
+
+    // we supply this default so that new implementations of decoders don't need to
+    default JsonSchema schema() {
+        return new JsonSchema.None();
+    }
+
+    default Decoder<T> withSchema(Function<JsonSchema, JsonSchema> f) {
+        Decoder<T> me = this;
+        return new Decoder<T>() {
+            @Override
+            public Either<String, T> apply(Json.JValue value) {
+                return me.apply(value);
+            }
+
+            @Override
+            public JsonSchema schema() {
+                return f.apply(me.schema());
+            }
+        };
+    }
+
+    default Decoder<T> setSchema(JsonSchema schema) {
+        return withSchema(__ -> schema);
+    }
+
+    default <U> Decoder<U> transform(Function<Decoder<T>, Decoder<U>> f) {
+        return f.apply(this);
+    }
 
     /**
      * Applies a function to the decoded value, if it exists.
@@ -109,11 +140,16 @@ public interface Decoder<T> {
     // generated
     // @formatter:off
      static <A, B, TT> Decoder<TT> map2(Decoder<A> dA, Decoder<B> dB, Function2<A, B, TT> f) {
-        return root ->
+
+        JsonSchema of = new JsonSchema.All(List.of(dA.schema(), dB.schema()));// TODO: Option.get
+
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).map(_dB ->
                 f.apply(_dA, _dB)
             ));
+
+        return d.setSchema(of);
     }
 
     static <A, B, C, TT> Decoder<TT> map3(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Function3<A, B, C, TT> f) {
@@ -185,4 +221,8 @@ public interface Decoder<T> {
             ))))))));
     }
     // @formatter:on
+
+    static <T> Decoder<T> withSchema(Decoder<T> d, JsonSchema schema) {
+        return d.setSchema(schema);
+    }
 }
