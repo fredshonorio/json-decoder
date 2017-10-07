@@ -1,6 +1,7 @@
 package com.fredhonorio.json_decoder;
 
 import com.fredhonorio.json_decoder.schema.JsonSchema;
+import com.fredhonorio.json_decoder.schema.JsonSchema.Lit.Type;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import javaslang.collection.HashMap;
@@ -19,6 +20,7 @@ import java.util.function.Predicate;
 
 import static com.fredhonorio.json_decoder.Decoder.withSchema;
 import static com.fredhonorio.json_decoder.EitherExtra.*;
+import static com.fredhonorio.json_decoder.schema.JsonSchema.lit;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 
@@ -40,53 +42,53 @@ public final class Decoders {
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JObject}.
      */
-    public static final Decoder<Json.JObject> JObject = v -> is(v, Json.JValue::isObject, Json.JValue::asJsonObject, "JObject");
+    public static final Decoder<Json.JObject> JObject = val(Json.JValue::isObject, Json.JValue::asJsonObject, "JObject", new JsonSchema.None());
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray}.
      */
-    public static final Decoder<Json.JArray> JArray = v -> is(v, Json.JValue::isArray, Json.JValue::asJsonArray, "JArray");
+    public static final Decoder<Json.JArray> JArray = val(Json.JValue::isArray, Json.JValue::asJsonArray, "JArray", new JsonSchema.Array(new JsonSchema.None()));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNull}.
      */
-    public static final Decoder<Json.JNull> JNull = v -> is(v, Json.JValue::isNull, Json.JValue::asJsonNull, "JNull");
+    public static final Decoder<Json.JNull> JNull = val(Json.JValue::isNull, Json.JValue::asJsonNull, "JNull", lit(Type.NULL));
 
     /**
      * Decodes a {@link String}. Only succeeds if the {@link net.hamnaberg.json.Json.JValue} is a json string. Performs
      * no coercion.
      */
-    public static final Decoder<String> String = withSchema(v -> is(v, Json.JValue::isString, Json.JValue::asString, "String"), new JsonSchema.Lit(JsonSchema.Lit.Type.STRING));
+    public static final Decoder<String> String = val(Json.JValue::isString, Json.JValue::asString, "String", lit(Type.STRING));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link BigDecimal}.
      */
-    public static final Decoder<BigDecimal> BigDecimal = v -> is(v, Json.JValue::isNumber, Json.JValue::asBigDecimal, "BigDecimal");
+    public static final Decoder<BigDecimal> BigDecimal = val(Json.JValue::isNumber, Json.JValue::asBigDecimal, "BigDecimal", lit(Type.NUMBER));
 
     /**
      * Decodes a {@link Boolean}.
      */
-    public static final Decoder<Boolean> Boolean = v -> is(v, Json.JValue::isBoolean, Json.JValue::asBoolean, "Boolean");
+    public static final Decoder<Boolean> Boolean = val(Json.JValue::isBoolean, Json.JValue::asBoolean, "Boolean", lit(Type.BOOL));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Float}.
      */
-    public static final Decoder<Float> Float = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::floatValue));
+    public static final Decoder<Float> Float = BigDecimal.mapTry(java.math.BigDecimal::floatValue, Throwable::getMessage);
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Double}.
      */
-    public static final Decoder<Double> Double = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::doubleValue));
+    public static final Decoder<Double> Double = BigDecimal.mapTry(java.math.BigDecimal::doubleValue, Throwable::getMessage);
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Integer}.
      */
-    public static final Decoder<Integer> Integer = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::intValueExact));
+    public static final Decoder<Integer> Integer = BigDecimal.mapTry(java.math.BigDecimal::intValueExact, Throwable::getMessage).setSchema(lit(Type.INT));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNumber} as a {@link Long}.
      */
-    public static final Decoder<Long> Long = v -> BigDecimal.apply(v).flatMap(big -> tryEither(big::longValueExact));
+    public static final Decoder<Long> Long = BigDecimal.mapTry(java.math.BigDecimal::longValueExact, Throwable::getMessage).setSchema(lit(Type.INT));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray} and applies the given decoder to the members.
@@ -389,11 +391,17 @@ public final class Decoders {
      * @return
      */
     public static <T extends Enum<T>> Decoder<T> enumByName(Class<T> enumClass) {
+        return enumByName(enumClass, Enum::name);
+    }
+
+    public static <T extends Enum<T>> Decoder<T> enumByName(Class<T> enumClass, Function<T, String> mapping) {
         List<T> enumValues = List.of(enumClass.getEnumConstants());
-        return json -> Decoders.String.apply(json)
-            .flatMap(s -> enumValues.find(ev -> ev.name().equals(s))
+        Decoder<T> en = json -> Decoders.String.apply(json)
+            .flatMap(s -> enumValues.find(ev -> mapping.apply(ev).equals(s))
                 .map(Either::<String, T>right)
                 .getOrElse(Either.left("cannot parse " + json + " into a value of enum " + enumClass.getName())));
+
+        return en.withSchema(__ -> new JsonSchema.Enum(Decoders.String.schema(), enumValues.map(v -> Json.jString(mapping.apply(v)))));
     }
 
     /**
@@ -420,6 +428,10 @@ public final class Decoders {
      */
     public static <T> Decoder<T> equal(Decoder<T> decoder, T value) {
         return decoder.filter(x -> x.equals(value), v -> "expected value: '" + value + "', got '" + v + "'");
+    }
+
+    public static Decoder<String> equal(String value) {
+        return equal(String, value).withSchema(str -> new JsonSchema.Enum(String.schema(), List.of(Json.jString(value))));
     }
 
     /**
@@ -451,9 +463,10 @@ public final class Decoders {
         };
     }
 
-    private static <T> Either<String, T> is(Json.JValue val, Predicate<Json.JValue> predicate, Function<Json.JValue, Option<T>> narrow, String type) {
-        return predicate.test(val)
+    private static <T> Decoder<T> val(Predicate<Json.JValue> predicate, Function<Json.JValue, Option<T>> narrow, String type, JsonSchema schema) {
+        Decoder<T> d = val -> predicate.test(val)
             ? right(narrow.apply(val).get())
             : left("expected " + type + ", got " + val.toString());
+        return d.setSchema(schema);
     }
 }
