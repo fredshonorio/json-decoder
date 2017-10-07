@@ -3,3 +3,4 @@
 build/
 local.properties
 json-decoder.iml
+out/
