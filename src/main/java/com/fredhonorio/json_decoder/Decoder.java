@@ -1,17 +1,15 @@
 package com.fredhonorio.json_decoder;
 
-import com.fredhonorio.json_decoder.schema.JsonSchema;
+import com.fredhonorio.json_decoder.schema.Schema;
 import javaslang.*;
 import javaslang.collection.List;
 import javaslang.control.Either;
-import javaslang.control.Option;
 import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.fredhonorio.json_decoder.EitherExtra.tryEither;
 import static javaslang.control.Either.left;
 import static javaslang.control.Either.right;
 
@@ -25,11 +23,11 @@ public interface Decoder<T> {
     Either<String, T> apply(Json.JValue value);
 
     // we supply this default so that new implementations of decoders don't need to
-    default JsonSchema schema() {
-        return new JsonSchema.None();
+    default Schema schema() {
+        return new Schema.Unknown();
     }
 
-    default Decoder<T> withSchema(Function<JsonSchema, JsonSchema> f) {
+    default Decoder<T> withSchema(Function<Schema, Schema> f) {
         Decoder<T> me = this;
         return new Decoder<T>() {
             @Override
@@ -38,13 +36,13 @@ public interface Decoder<T> {
             }
 
             @Override
-            public JsonSchema schema() {
+            public Schema schema() {
                 return f.apply(me.schema());
             }
         };
     }
 
-    default Decoder<T> setSchema(JsonSchema schema) {
+    default Decoder<T> setSchema(Schema schema) {
         return withSchema(__ -> schema);
     }
 
@@ -148,7 +146,7 @@ public interface Decoder<T> {
                 f.apply(_dA, _dB)
             ));
 
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema()));
         return d.setSchema(schema);
     }
 
@@ -159,7 +157,7 @@ public interface Decoder<T> {
             dC.apply(root).map(_dC ->
                 f.apply(_dA, _dB, _dC)
             )));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema()));
         return d.setSchema(schema);
     }
 
@@ -171,7 +169,7 @@ public interface Decoder<T> {
             dD.apply(root).map(_dD ->
                 f.apply(_dA, _dB, _dC, _dD)
             ))));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema()));
         return d.setSchema(schema);
     }
 
@@ -184,7 +182,7 @@ public interface Decoder<T> {
             dE.apply(root).map(_dE ->
                 f.apply(_dA, _dB, _dC, _dD, _dE)
             )))));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema()));
         return d.setSchema(schema);
     }
 
@@ -198,7 +196,7 @@ public interface Decoder<T> {
             dF.apply(root).map(_dF ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF)
             ))))));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema()));
         return d.setSchema(schema);
     }
 
@@ -213,7 +211,7 @@ public interface Decoder<T> {
             dG.apply(root).map(_dG ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG)
             )))))));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema()));
         return d.setSchema(schema);
     }
 
@@ -229,12 +227,12 @@ public interface Decoder<T> {
             dH.apply(root).map(_dH ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG, _dH)
             ))))))));
-        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema(), dH.schema()));
+        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema(), dH.schema()));
         return d.setSchema(schema);
     }
     // @formatter:on
 
-    static <T> Decoder<T> withSchema(Decoder<T> d, JsonSchema schema) {
+    static <T> Decoder<T> withSchema(Decoder<T> d, Schema schema) {
         return d.setSchema(schema);
     }
 }

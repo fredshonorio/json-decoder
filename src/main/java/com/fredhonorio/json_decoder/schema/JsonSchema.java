@@ -1,237 +1,145 @@
 package com.fredhonorio.json_decoder.schema;
 
-import com.fredhonorio.json_decoder.Decoder;
-import com.fredhonorio.json_decoder.Decoders;
+import javaslang.Function2;
 import javaslang.Tuple;
-import javaslang.Tuple2;
 import javaslang.collection.List;
+import javaslang.control.Option;
 import net.hamnaberg.json.Json;
 
-// we're using show() temporarily, this will be an interpreted ADT later
-public abstract class JsonSchema {
+import java.util.function.Function;
+
+public class JsonSchema {
+
+    private static <T> T fold(
+        Schema s,
+        Function<Schema.Any, T> any,
+        Function<Schema.OneOf, T> oneOf,
+        Function<Schema.Object, T> object,
+        Function<Schema.Array, T> array,
+        Function<Schema.All, T> all,
+        Function<Schema.Lit, T> lit,
+        Function<Schema.Enum, T> enumeration,
+        Function<Schema.Unknown, T> none) {
+        return
+            s instanceof Schema.Any ? any.apply((Schema.Any) s) :
+            s instanceof Schema.OneOf ? oneOf.apply((Schema.OneOf) s) :
+            s instanceof Schema.Object ? object.apply((Schema.Object) s) :
+            s instanceof Schema.Array ? array.apply((Schema.Array) s) :
+            s instanceof Schema.All ? all.apply((Schema.All) s) :
+            s instanceof Schema.Lit ? lit.apply((Schema.Lit) s) :
+            s instanceof Schema.Enum ? enumeration.apply((Schema.Enum) s) :
+            s instanceof Schema.Unknown ? none.apply((Schema.Unknown) s) :
+            fail("Match error " + s);
+    }
+
+    private static <T> T fail(String message) {
+        throw new RuntimeException(message);
+    }
+
+    // how to handle references?
+    public static Json.JObject jsonSchema(Schema schema) {
+        return fold(schema,
+            any -> Json.jEmptyObject(),
+            oneOf -> Json.jObject("anyOf", Json.jArray(oneOf.possibilities.map(JsonSchema::jsonSchema))),
+            object -> object(object),
+            array -> type("array").put("items", jsonSchema(array.inner)),
+            all -> jsonSchema(flatten(all).foldLeft((Schema) new Schema.Any(), JsonSchema::both)),
+            lit -> lit(lit.type),
+            enumeration -> Json.jObject("enum", Json.jArray(enumeration.values)),
+            unknown -> Json.jObject("nooooooooooo", "nooooooooooo")
+        );
+    }
+
+    private static <T extends Schema> Option<T> as(Schema x, Class<T> clz) {
+        return clz.isInstance(x) ? Option.some(clz.cast(x)) : Option.none();
+    }
+
+    // how to
+    private static Schema both(Schema a, Schema b) {
+        return fold(a,
+            any -> b,
+            oneOf -> as(b, Schema.OneOf.class).<Schema>map(other -> new Schema.OneOf(oneOf.possibilities.appendAll(other.possibilities))).getOrElse(b),
+            object -> as(b, Schema.Object.class).<Schema>map(other -> new Schema.Object(object.knownFields.appendAll(other.knownFields), object.unnamedFields.appendAll(other.unnamedFields))).getOrElse(b),
+            array -> b, // TODO
+            all -> as(b, Schema.All.class).<Schema>map(other -> new Schema.All(all.all.appendAll(other.all))).getOrElse(b),
+            lit -> b, // TODO
+            enumerable -> b, // TODO
+            unknown -> new Schema.OneOf(List.of(unknown, b))
+        );
+    }
+
+    private static List<Schema> flatten(Schema.All xs) {
+        System.out.println(xs + ", " + xs.all);
+
+        List<Schema.All> nested = xs.all.flatMap(x -> as(x, Schema.All.class));
+
+        return xs.all.removeAll(nested)
+            .appendAll(nested.flatMap(JsonSchema::flatten));
+    }
+
+    private static Json.JObject lit(Schema.Lit.Type type) {
+            switch (type) {
+                case INT:    return type("integer");
+                case BOOL:   return type("boolean");
+                case NULL:   return type("null");
+                case FLOAT:  return type("number");
+                case STRING: return type("string");
+                default:     throw new RuntimeException("!");
+            }
+    }
+
+    private static Json.JObject object(Schema.Object object) {
+
+        Json.JObject properties = object.knownFields
+            .toMap(f -> Tuple.<String, Json.JValue>of(f.name, jsonSchema(f.value)))
+            .transform(Json::jObject);
+
+        Json.JArray requiredFields = object.knownFields
+            .filter(f -> f.required)
+            .map(f -> f.name)
+            .<Json.JValue>map(Json::jString)
+            .transform(Json::jArray);
+
+        Json.JValue additionalProps = object.unnamedFields.isEmpty()
+            ? Json.jBoolean(true) // additional props by default
+            : jsonSchema(new Schema.OneOf(object.unnamedFields));
+
+        return With.of(type("object"))
+            .doWhen(!properties.isEmpty(),
+                Json.JObject::concat,
+                Json.jObject("properties", properties))
+            .doWhen(requiredFields.size() > 0,
+                Json.JObject::concat,
+                Json.jObject("required", requiredFields))
+            .get()
+            .put("additionalProperties", additionalProps);
+    }
+
+    private static class With<T> {
+        private final T v;
+
+        public With(T v) {
+            this.v = v;
+        }
+
+        public <U> With<T> doWhen(Option<U> o, Function2<T, U, T> apply) {
+            return new With<>(o.map(apply.apply(v)).getOrElse(v));
+        }
+
+        public <U> With<T> doWhen(boolean check, Function2<T, U, T> apply, U u) {
+            return doWhen(Option.when(check, u), apply);
+        }
+
+        public T get() {
+            return v;
+        }
+
+        public static <T> With<T> of(T v) {
+            return new With<>(v);
+        }
+    }
 
     private static Json.JObject type(String type) {
         return Json.jObject("type", type);
-    }
-
-    private static Json.JObject object(List<Field> fields) {
-        List<Tuple2<String, Json.JValue>> props = fields
-            .map(f -> Tuple.of(f.name, f.value.show()));
-
-        return type("object")
-            .put("properties", Json.jObject(props));
-    }
-
-    public abstract Json.JObject show();
-
-    public static final class Any extends JsonSchema {
-
-        public Any() {}
-
-        @Override
-        public Json.JObject show() {
-            return Json.jEmptyObject();
-        }
-    }
-
-    public static final class Object extends JsonSchema {
-
-        @Override
-        public Json.JObject show() {
-            return JsonSchema.type("object");
-        }
-    }
-
-    public static final class ObjectWithUnknownFieldNames extends JsonSchema {
-
-        public final JsonSchema inner;
-
-        public ObjectWithUnknownFieldNames(JsonSchema inner) {
-            this.inner = inner;
-        }
-
-        @Override
-        public Json.JObject show() {
-            return JsonSchema.type("object")
-                .put("additionalProperties", inner.show());
-        }
-    }
-
-    public static final class Array extends JsonSchema {
-        public final JsonSchema inner;
-
-        public Array(JsonSchema inner) {
-            this.inner = inner;
-        }
-
-        @Override
-        public Json.JObject show() {
-            return type("array")
-                .put("items", inner.show());
-        }
-    }
-
-    public static final class None extends JsonSchema {
-        public None() {
-        }
-
-        @Override
-        public Json.JObject show() {
-            return Json.jEmptyObject();
-        }
-    }
-
-    public static final class Field extends JsonSchema {
-        public final String name;
-        public final JsonSchema value;
-        public final boolean required;
-
-        @Deprecated
-        public Field(String name, JsonSchema value) {
-            this.name = name;
-            this.value = value;
-            this.required = true;
-        }
-
-        public Field(String name, JsonSchema value, boolean required) {
-            this.name = name;
-            this.value = value;
-            this.required = required;
-        }
-
-        @Override
-        public Json.JObject show() {
-            return object(List.of(this));
-        }
-    }
-
-    public static final class All extends JsonSchema {
-        public final List<JsonSchema> all;
-
-        public All(List<JsonSchema> all) {
-            this.all = all;
-        }
-
-                        /*
-        Describes that this value matches all of these conditions
-        Inside a flattened All, all items must be of the same type (a value can't be both an array and an int)
-        We must then unify all the items of the same type do provide a single description
-     */
-
-        @Override
-        public Json.JObject show() {
-            // other implementations make sense, but probably the flattened children of an All should be of the same type, eg:
-            // all(int(params1), int(params2), all(int(param3))?
-
-            List<JsonSchema> items = flatten(this);
-
-            // TODO: ensure non-empty
-
-            Class<? extends JsonSchema> first = items.head().getClass();
-
-            if (first.equals(Field.class)) {
-                return object(items.map(e -> (Field) e));
-            } else {
-                throw new RuntimeException("!");
-            }
-        }
-
-        private static List<JsonSchema> flatten(All all) {
-            return all.all
-                .flatMap(one -> one instanceof All ? flatten((All) one) : List.of(one));
-        }
-
-    }
-
-    public static final class Lit extends JsonSchema {
-        @Override
-        public Json.JObject show() {
-            switch (type) {
-                case INT:
-                    return JsonSchema.type("integer");
-                case BOOL:
-                    return type("boolean");
-                case NULL:
-                    return type("null");
-                case NUMBER:
-                    return type("number");
-                case STRING:
-                    return type("string");
-                default:
-                    throw new RuntimeException("!");
-            }
-        }
-
-        public static enum Type {
-            NULL, INT, NUMBER, BOOL, STRING
-        } // TODO: add match
-
-        public final Type type;
-
-        public Lit(Type type) {
-            this.type = type;
-        }
-    }
-
-    public static final class Enum extends JsonSchema {
-        public final JsonSchema type;
-        public final List<Json.JValue> values;
-
-        public Enum(JsonSchema type, List<Json.JValue> values) {
-            this.type = type;
-            this.values = values;
-        }
-
-        @Override
-        public Json.JObject show() {
-            return type.show()
-                .put("enum", Json.jArray(values));
-        }
-
-    }
-
-    public static Lit lit(Lit.Type type) {
-        return new Lit(type);
-    }
-
-    public static void main(String[] args) {
-
-        JsonSchema sch = Decoders.list(Decoders.list(Decoders.String)).schema();
-
-        System.out.println(sch.show().spaces2());
-
-        JsonSchema s = Decoder.map2(
-            Decoders.field("a", Decoders.list(Decoders.String)),
-            Decoders.field("b", Decoders.String),
-            Tuple::of
-        ).schema();
-
-        System.out.println(s.show().spaces2());
-
-        JsonSchema s1 = Decoder.map2(
-            Decoders.field("a", Decoders.field("b", Decoders.list(Decoders.String))),
-            Decoder.map2(
-                Decoders.field("b", Decoders.String),
-                Decoders.field("c", Decoders.String),
-                Tuple::of
-            ),
-            Tuple::of
-        ).schema();
-
-        System.out.println(s1.show().spaces2());
-
-
-        System.out.println(Decoders.enumByName(Lit.Type.class).schema().show().spaces2());
-
-        System.out.println(Decoders.enumByName(Lit.Type.class, x -> x.name().toLowerCase()).schema().show().spaces2());
-
-        System.out.println(Decoders.equal("hey").schema().show().spaces2());
-
-
-        System.out.println(Decoders.at(List.of("a", "b", "c"), Decoders.Integer).schema().show().spaces2());
-
-
-
-
     }
 }
