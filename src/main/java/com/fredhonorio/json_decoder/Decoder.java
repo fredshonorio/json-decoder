@@ -85,7 +85,7 @@ public interface Decoder<T> {
      * Causes this decoder to fail if the given predicate is not true.
      */
     default Decoder<T> filter(Predicate<T> predicate, String ifMissing) {
-        return x -> apply(x).filter(predicate).getOrElse(left(ifMissing));
+        return filter(predicate, __ -> ifMissing);
     }
 
     /**
