@@ -7,8 +7,7 @@ import javaslang.Tuple2;
 import javaslang.collection.List;
 import net.hamnaberg.json.Json;
 
-import java.nio.charset.StandardCharsets;
-
+// we're using show() temporarily, this will be an interpreted ADT later
 public abstract class JsonSchema {
 
     private static Json.JObject type(String type) {
@@ -24,6 +23,24 @@ public abstract class JsonSchema {
     }
 
     public abstract Json.JObject show();
+
+    public static final class Any extends JsonSchema {
+
+        public Any() {}
+
+        @Override
+        public Json.JObject show() {
+            return Json.jEmptyObject();
+        }
+    }
+
+    public static final class Object extends JsonSchema {
+
+        @Override
+        public Json.JObject show() {
+            return JsonSchema.type("object");
+        }
+    }
 
     public static final class Array extends JsonSchema {
         public final JsonSchema inner;
@@ -52,10 +69,19 @@ public abstract class JsonSchema {
     public static final class Field extends JsonSchema {
         public final String name;
         public final JsonSchema value;
+        public final boolean required;
 
+        @Deprecated
         public Field(String name, JsonSchema value) {
             this.name = name;
             this.value = value;
+            this.required = true;
+        }
+
+        public Field(String name, JsonSchema value, boolean required) {
+            this.name = name;
+            this.value = value;
+            this.required = required;
         }
 
         @Override
@@ -185,6 +211,12 @@ public abstract class JsonSchema {
         System.out.println(Decoders.enumByName(Lit.Type.class, x -> x.name().toLowerCase()).schema().show().spaces2());
 
         System.out.println(Decoders.equal("hey").schema().show().spaces2());
+
+
+        System.out.println(Decoders.at(List.of("a", "b", "c"), Decoders.Integer).schema().show().spaces2());
+
+
+
 
     }
 }

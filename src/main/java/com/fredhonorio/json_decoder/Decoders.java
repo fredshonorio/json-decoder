@@ -37,12 +37,12 @@ public final class Decoders {
     /**
      * Simply returns the {@link net.hamnaberg.json.Json.JValue}. Always succeeds.
      */
-    public static final Decoder<Json.JValue> Value = Either::right;
+    public static final Decoder<Json.JValue> Value = Decoder.withSchema(v -> Either.right(v), new JsonSchema.Any());
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JObject}.
      */
-    public static final Decoder<Json.JObject> JObject = val(Json.JValue::isObject, Json.JValue::asJsonObject, "JObject", new JsonSchema.None());
+    public static final Decoder<Json.JObject> JObject = val(Json.JValue::isObject, Json.JValue::asJsonObject, "JObject", new JsonSchema.Object());
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray}.
@@ -142,11 +142,13 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Option<T>> optionalField(String key, Decoder<T> inner) {
-        return root -> JObject.apply(root)
+        Decoder<Option<T>> d = root -> JObject.apply(root)
             .flatMap(r ->
                 r.get(key)
                     .map(val -> inner.apply(val).map(Option::some).mapLeft(err -> "field '" + key + "': " + err))
                     .getOrElse(right(Option.none())));
+
+        return d.setSchema(new JsonSchema.Field(key, inner.schema(), false));
     }
 
     /**
