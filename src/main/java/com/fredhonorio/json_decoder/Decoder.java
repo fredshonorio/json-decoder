@@ -56,21 +56,22 @@ public interface Decoder<T> {
      * Applies a function to the decoded value, if it exists.
      */
     default <U> Decoder<U> map(Function<T, U> f) {
-        return x -> apply(x).map(f);
+        return withSchema(x -> apply(x).map(f), this.schema());
     }
 
     /**
      * Applies a function to the error, if it exists
      */
     default Decoder<T> mapError(Function<String, String> f) {
-        return x -> apply(x).mapLeft(f);
+        return withSchema(x -> apply(x).mapLeft(f), this.schema());
     }
 
     /**
      * Creates a Decoder that depends on the result of this Decoder.
      */
     default <U> Decoder<U> andThen(Function<T, Decoder<U>> f) {
-        return x -> apply(x).flatMap(t -> f.apply(t).apply(x));
+        Decoder<U> d = x -> apply(x).flatMap(t -> f.apply(t).apply(x));
+        return d.setSchema(this.schema());
     }
 
     /**
@@ -92,13 +93,15 @@ public interface Decoder<T> {
      * Causes this decoder to fail if the given predicate is not true.
      */
     default Decoder<T> filter(Predicate<T> predicate, Function<T, String> ifMissing) {
-        return x -> apply(x)
+        Decoder<T> d = x -> apply(x)
             .fold(
                 Either::left,
                 ok ->
                     predicate.test(ok)
                         ? right(ok)
                         : left(ifMissing.apply(ok)));
+
+        return d.setSchema(this.schema());
     }
 
     /**
@@ -139,38 +142,41 @@ public interface Decoder<T> {
     // @formatter:off
      static <A, B, TT> Decoder<TT> map2(Decoder<A> dA, Decoder<B> dB, Function2<A, B, TT> f) {
 
-        JsonSchema of = new JsonSchema.All(List.of(dA.schema(), dB.schema()));// TODO: Option.get
-
         Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).map(_dB ->
                 f.apply(_dA, _dB)
             ));
 
-        return d.setSchema(of);
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, TT> Decoder<TT> map3(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Function3<A, B, C, TT> f) {
-        return root ->
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).map(_dC ->
                 f.apply(_dA, _dB, _dC)
             )));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, D, TT> Decoder<TT> map4(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Decoder<D> dD, Function4<A, B, C, D, TT> f) {
-        return root ->
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).flatMap(_dC ->
             dD.apply(root).map(_dD ->
                 f.apply(_dA, _dB, _dC, _dD)
             ))));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, D, E, TT> Decoder<TT> map5(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Decoder<D> dD, Decoder<E> dE, Function5<A, B, C, D, E, TT> f) {
-        return root ->
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).flatMap(_dC ->
@@ -178,10 +184,12 @@ public interface Decoder<T> {
             dE.apply(root).map(_dE ->
                 f.apply(_dA, _dB, _dC, _dD, _dE)
             )))));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, D, E, F, TT> Decoder<TT> map6(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Decoder<D> dD, Decoder<E> dE, Decoder<F> dF, Function6<A, B, C, D, E, F, TT> f) {
-        return root ->
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).flatMap(_dC ->
@@ -190,10 +198,12 @@ public interface Decoder<T> {
             dF.apply(root).map(_dF ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF)
             ))))));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, D, E, F, G, TT> Decoder<TT> map7(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Decoder<D> dD, Decoder<E> dE, Decoder<F> dF, Decoder<G> dG, Function7<A, B, C, D, E, F, G, TT> f) {
-        return root ->
+        Decoder<TT> d = root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).flatMap(_dC ->
@@ -203,10 +213,12 @@ public interface Decoder<T> {
             dG.apply(root).map(_dG ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG)
             )))))));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema()));
+        return d.setSchema(schema);
     }
 
     static <A, B, C, D, E, F, G, H, TT> Decoder<TT> map8(Decoder<A> dA, Decoder<B> dB, Decoder<C> dC, Decoder<D> dD, Decoder<E> dE, Decoder<F> dF, Decoder<G> dG, Decoder<H> dH, Function8<A, B, C, D, E, F, G, H, TT> f) {
-        return root ->
+        Decoder<TT> d =root ->
             dA.apply(root).flatMap(_dA ->
             dB.apply(root).flatMap(_dB ->
             dC.apply(root).flatMap(_dC ->
@@ -217,6 +229,8 @@ public interface Decoder<T> {
             dH.apply(root).map(_dH ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG, _dH)
             ))))))));
+        JsonSchema schema = new JsonSchema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema(), dH.schema()));
+        return d.setSchema(schema);
     }
     // @formatter:on
 
