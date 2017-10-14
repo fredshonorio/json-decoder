@@ -42,6 +42,21 @@ public abstract class JsonSchema {
         }
     }
 
+    public static final class ObjectWithUnknownFieldNames extends JsonSchema {
+
+        public final JsonSchema inner;
+
+        public ObjectWithUnknownFieldNames(JsonSchema inner) {
+            this.inner = inner;
+        }
+
+        @Override
+        public Json.JObject show() {
+            return JsonSchema.type("object")
+                .put("additionalProperties", inner.show());
+        }
+    }
+
     public static final class Array extends JsonSchema {
         public final JsonSchema inner;
 

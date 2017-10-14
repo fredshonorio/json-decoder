@@ -2,6 +2,7 @@ package com.fredhonorio.json_decoder;
 
 import com.fredhonorio.json_decoder.schema.JsonSchema;
 import com.fredhonorio.json_decoder.schema.JsonSchema.Lit.Type;
+import javaslang.Function2;
 import javaslang.Tuple;
 import javaslang.Tuple2;
 import javaslang.collection.HashMap;
@@ -283,13 +284,14 @@ public final class Decoders {
      * @return
      */
     public static <T> Decoder<Map<String, T>> dict(Decoder<T> valueDecoder) {
-        return root -> JObject.apply(root)
-            .flatMap(r ->
-                r.mapToList((k, v) -> valueDecoder.apply(v)
-                    .map(decV -> Tuple.of(k, decV))
-                    .mapLeft(err -> "dict key '" + k + "': " + err))
-                    .transform(EitherExtra::sequence))
-            .map(HashMap::ofEntries);
+        Function2<String, Json.JValue, Either<String, Tuple2<String, T>>> decodeEntry = (k, v) -> valueDecoder.apply(v)
+            .map(decV -> Tuple.of(k, decV))
+            .mapLeft(err -> "dict key '" + k + "': " + err);
+
+        return JObject
+            .andThen(j -> fromResult(sequence(j.mapToList(decodeEntry))))
+            .<Map<String, T>>map(HashMap::ofEntries)
+            .setSchema(new JsonSchema.ObjectWithUnknownFieldNames(valueDecoder.schema()));
     }
 
     /**
