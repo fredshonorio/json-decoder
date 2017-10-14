@@ -112,7 +112,7 @@ public interface Decoder<T> {
      * Attempts to transform the decoded value, fails with a given message if the transformation fails.
      */
     default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, String ifFailed) {
-        return x -> apply(x).flatMap(y -> tryEither(() -> f.apply(y)).mapLeft(err -> ifFailed));
+        return mapTry(f, __ -> ifFailed);
     }
 
     /**
@@ -120,11 +120,9 @@ public interface Decoder<T> {
      * error depending on the exception.
      */
     default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, Function<Throwable, String> ifFailed) {
-        return x -> apply(x).flatMap(y ->
-            Try.of(() -> f.apply(y))
-                .toEither()
-                .mapLeft(ifFailed)
-        );
+        return andThen(t ->
+            Decoders.fromResult(
+                Try.of(() -> f.apply(t)).toEither().mapLeft(ifFailed)));
     }
 
     /**
