@@ -47,7 +47,7 @@ public final class Decoders {
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JArray}.
      */
-    public static final Decoder<Json.JArray> JArray = val(Json.JValue::isArray, Json.JValue::asJsonArray, "JArray", new Schema.Array(new Schema.Unknown()));
+    public static final Decoder<Json.JArray> JArray = val(Json.JValue::isArray, Json.JValue::asJsonArray, "JArray", new Schema.Array(new Schema.Any()));
 
     /**
      * Decodes a {@link net.hamnaberg.json.Json.JNull}.
@@ -254,7 +254,7 @@ public final class Decoders {
                         .mkString("\n\t - ")));
         };
 
-        return dec.setSchema(new Schema.OneOf(decoders.map(Decoder::schema)));
+        return dec.setSchema(new Schema.Union(decoders.map(Decoder::schema)));
     }
 
     /**
@@ -449,17 +449,69 @@ public final class Decoders {
     /**
      * Builds a recursive decoder.
      *
-     * @param recursive
+     * @param generate
      * @return
      */
-    public static <T> Decoder<T> recursive(Function<Decoder<T>, Decoder<T>> recursive) {
+    public static <T> Decoder<T> recursive(Function<Decoder<T>, Decoder<T>> generate) {
         // with Java lambdas we can't use recursive definitions like in Elm, so implementing lazy doesn't make much sense
         // we instead provide a solution for the special case of recursive decoders
 
         return new Decoder<T>() {
             @Override
             public Either<String, T> apply(Json.JValue value) {
-                return recursive.apply(this).apply(value);
+                return generate.apply(this).apply(value);
+            }
+
+            @Override
+            public Schema schema() {
+                /*
+                we must set this unknown schema in case the user did not set the schema of `self`
+                if we don't, then decoder.schema() is recursively defined, and we get a stack overflow (notice that
+                while it looks like a parameter, the value is never defined anywhere, is just a big nested function)
+                when we set self as a reference (or any other schema) we also break the infinite recursion
+                also, this unknown schema is overwritten by calling ref
+
+                let's describe this behavior by successive function application
+                we also ignore the decoding part, so recursive is a function that takes a function from a schema to
+                another and returns another schema (technically, because this is OOP we have the current schema implicitly,
+                but since it is not used inside `recursive` we ignore it)
+
+                recursive : (Schema -> Schema) -> Schema
+
+                `ref` overwrites the current schema, so if we ignore the decoder its just:
+                ref : (String -> Schema -> Schema)
+                ref str ignored = Ref(str)
+
+                with an example `generate`:
+
+                g : (Schema -> Schema)
+                g = self -> field("a", ref("r", self))
+
+                expanding `recursive`
+                --
+                g(Unknown())
+                (self -> field("a", self.ref("r")))(Unknown())
+                field("a", ref("r", Unknown()))
+                field("a", Ref("r"))
+                --
+
+                when user does not call ref:
+                --
+                g(Unknown())
+                (self -> field("a", self))(Unknown())
+                field("a", Unknown())
+                --
+                notice that we can still get a partial schema.
+
+                if instead we did pass the current schema instead of unknown:
+
+                g(current) -- current is also g
+                g(g(current))
+                g(g(g(current))) -- etc.
+                */
+
+                Schema unknown = new Schema.Unknown("This decoder was defined recursively, but the reference was never set, see: http://example.com");
+                return generate.apply(this.setSchema(unknown)).schema();
             }
         };
     }

@@ -24,7 +24,7 @@ public interface Decoder<T> {
 
     // we supply this default so that new implementations of decoders don't need to
     default Schema schema() {
-        return new Schema.Unknown();
+        return new Schema.Unknown("The schema for this decoder was never defined");
     }
 
     default Decoder<T> withSchema(Function<Schema, Schema> f) {
@@ -34,6 +34,13 @@ public interface Decoder<T> {
     default Decoder<T> setSchema(Schema schema) {
         return withSchema(this, schema);
     }
+
+    default Decoder<T> ref(String ref) {
+        return withSchema(this, new Schema.Ref(ref));
+    }
+
+    default Decoder<T> ref(Class<?> clz) {
+        return ref(clz.getName());
     }
 
     default <U> Decoder<U> transform(Function<Decoder<T>, Decoder<U>> f) {
@@ -118,6 +125,7 @@ public interface Decoder<T> {
 
     /**
      * Widen a decoder to looser type.
+     *
      * @param dec The decoder
      * @param <T> The narrow type
      * @return
@@ -136,7 +144,7 @@ public interface Decoder<T> {
                 f.apply(_dA, _dB)
             ));
 
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema()));
         return d.setSchema(schema);
     }
 
@@ -147,7 +155,7 @@ public interface Decoder<T> {
             dC.apply(root).map(_dC ->
                 f.apply(_dA, _dB, _dC)
             )));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema()));
         return d.setSchema(schema);
     }
 
@@ -159,7 +167,7 @@ public interface Decoder<T> {
             dD.apply(root).map(_dD ->
                 f.apply(_dA, _dB, _dC, _dD)
             ))));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema()));
         return d.setSchema(schema);
     }
 
@@ -172,7 +180,7 @@ public interface Decoder<T> {
             dE.apply(root).map(_dE ->
                 f.apply(_dA, _dB, _dC, _dD, _dE)
             )))));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema()));
         return d.setSchema(schema);
     }
 
@@ -186,7 +194,7 @@ public interface Decoder<T> {
             dF.apply(root).map(_dF ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF)
             ))))));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema()));
         return d.setSchema(schema);
     }
 
@@ -201,7 +209,7 @@ public interface Decoder<T> {
             dG.apply(root).map(_dG ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG)
             )))))));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema()));
         return d.setSchema(schema);
     }
 
@@ -217,7 +225,7 @@ public interface Decoder<T> {
             dH.apply(root).map(_dH ->
                 f.apply(_dA, _dB, _dC, _dD, _dE, _dF, _dG, _dH)
             ))))))));
-        Schema schema = new Schema.All(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema(), dH.schema()));
+        Schema schema = new Schema.Intersection(List.of(dA.schema(), dB.schema(), dC.schema(), dD.schema(), dE.schema(), dF.schema(), dG.schema(), dH.schema()));
         return d.setSchema(schema);
     }
     // @formatter:on

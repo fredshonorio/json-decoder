@@ -3,7 +3,6 @@ package com.fredhonorio.json_decoder.schema;
 import com.fredhonorio.json_decoder.Decoder;
 import com.fredhonorio.json_decoder.Decoders;
 import javaslang.Tuple;
-import javaslang.Tuple2;
 import javaslang.collection.List;
 import net.hamnaberg.json.Json;
 
@@ -39,10 +38,10 @@ public abstract class Schema {
         public Any() {}
     }
 
-    public static final class OneOf extends Schema {
+    public static final class Union extends Schema {
         public final List<Schema> possibilities;
 
-        public OneOf(List<Schema> possibilities) {
+        public Union(List<Schema> possibilities) {
             this.possibilities = possibilities;
         }
     }
@@ -67,13 +66,24 @@ public abstract class Schema {
     }
 
     public static final class Unknown extends Schema {
-        public Unknown() { }
+        public final String message;
+        public Unknown(String message) {
+            this.message = message;
+        }
     }
 
-    public static final class All extends Schema {
+
+    public static final class Ref extends Schema {
+        public final String ref;
+        public Ref(String ref) {
+            this.ref = ref;
+        }
+    }
+
+    public static final class Intersection extends Schema {
         public final List<Schema> all;
 
-        public All(List<Schema> all) {
+        public Intersection(List<Schema> all) {
             this.all = all;
         }
     }
