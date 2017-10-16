@@ -28,22 +28,12 @@ public interface Decoder<T> {
     }
 
     default Decoder<T> withSchema(Function<Schema, Schema> f) {
-        Decoder<T> me = this;
-        return new Decoder<T>() {
-            @Override
-            public Either<String, T> apply(Json.JValue value) {
-                return me.apply(value);
-            }
-
-            @Override
-            public Schema schema() {
-                return f.apply(me.schema());
-            }
-        };
+        return withSchema(this, f.apply(this.schema()));
     }
 
     default Decoder<T> setSchema(Schema schema) {
-        return withSchema(__ -> schema);
+        return withSchema(this, schema);
+    }
     }
 
     default <U> Decoder<U> transform(Function<Decoder<T>, Decoder<U>> f) {
@@ -233,6 +223,16 @@ public interface Decoder<T> {
     // @formatter:on
 
     static <T> Decoder<T> withSchema(Decoder<T> d, Schema schema) {
-        return d.setSchema(schema);
+        return new Decoder<T>() {
+            @Override
+            public Either<String, T> apply(Json.JValue value) {
+                return d.apply(value);
+            }
+
+            @Override
+            public Schema schema() {
+                return schema;
+            }
+        };
     }
 }
