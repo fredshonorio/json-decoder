@@ -256,10 +256,10 @@ public class DecodersTest {
         assertError(
             "\"a\"",
             wonkyInt,
-            "Attempted multiple decoders, all failed:\n" +
-                "\t - expected BigDecimal, got JString{value='a'}\n" +
-                "\t - noo\n" +
-                "\t - expected JNull, got JString{value='a'}"
+            "attempted multiple decoders, all failed: " +
+                "(expected BigDecimal, got JString{value='a'}), " +
+                "(noo), " +
+                "(expected JNull, got JString{value='a'})"
         );
 
         // here we're testing laziness in oneOf, we don't expect both decoders to run if the first succeeds
@@ -286,9 +286,9 @@ public class DecodersTest {
         assertError(
             "[1, \"a\", \"b\", 4, 5]",
             list(effectfulDecoder),
-            "array element #1: Attempted multiple decoders, all failed:\n" +
-                "\t - expected BigDecimal, got JString{value='a'}\n" +
-                "\t - bloop"
+            "array element #1: attempted multiple decoders, all failed: " +
+                "(expected BigDecimal, got JString{value='a'}), " +
+                "(bloop)"
         );
 
         assertEquals(1, secondDecoderUses.get());
@@ -320,17 +320,18 @@ public class DecodersTest {
     public void testNullable() {
         assertValue("1", nullable(Integer), Option.of(1));
         assertValue("null", nullable(Integer), Option.none());
-        assertError("true", nullable(Integer), "Attempted multiple decoders, all failed:\n" +
-            "\t - expected BigDecimal, got JBoolean{value=true}\n" +
-            "\t - expected JNull, got JBoolean{value=true}");
+        assertError("true", nullable(Integer),
+            "attempted multiple decoders, all failed: " +
+                "(expected BigDecimal, got JBoolean{value=true}), " +
+                "(expected JNull, got JBoolean{value=true})");
 
         // nullable with default
         Decoder<Integer> nullableWithDefault = nullable(Integer, 0);
         assertValue("1", nullableWithDefault, 1);
         assertValue("null", nullableWithDefault, 0);
-        assertError("\"a\"", nullableWithDefault, "Attempted multiple decoders, all failed:\n" +
-            "\t - expected BigDecimal, got JString{value='a'}\n" +
-            "\t - expected JNull, got JString{value='a'}");
+        assertError("\"a\"", nullableWithDefault, "attempted multiple decoders, all failed: " +
+            "(expected BigDecimal, got JString{value='a'}), " +
+            "(expected JNull, got JString{value='a'})");
     }
 
     @Test

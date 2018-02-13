@@ -240,8 +240,8 @@ public final class Decoders {
                 .getOrElse(() -> left(
                     results
                         .map(Either::getLeft)
-                        .prepend("Attempted multiple decoders, all failed:")
-                        .mkString("\n\t - ")));
+                        .mkString("attempted multiple decoders, all failed: (", "), (", ")")
+                ));
         };
     }
 
