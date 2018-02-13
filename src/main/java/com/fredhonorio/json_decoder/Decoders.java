@@ -13,6 +13,7 @@ import net.hamnaberg.json.Json;
 import net.hamnaberg.json.jackson.JacksonStreamingParser;
 
 import java.math.BigDecimal;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -443,6 +444,33 @@ public final class Decoders {
                 return recursive.apply(this).apply(value);
             }
         };
+    }
+
+    /**
+     * Performs a side-effect before decoding, useful to debug the json payload.
+     *
+     * @param action The action
+     * @param dec The pure decoder
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> debug(Consumer<Json.JValue> action, Decoder<T> dec) {
+        Decoder<Json.JValue> dbg = j -> {
+            action.accept(j);
+            return Either.right(j);
+        };
+
+        return dbg.andThen(__ -> dec);
+    }
+
+    /**
+     * Prints the json payload to stdout.
+     * @param dec The pure decoder
+     * @param <T>
+     * @return
+     */
+    public static <T> Decoder<T> debug(Decoder<T> dec) {
+        return debug(j -> System.out.println(j.spaces2()), dec);
     }
 
     private static <T> Either<String, T> is(Json.JValue val, Predicate<Json.JValue> predicate, Function<Json.JValue, Option<T>> narrow, String type) {

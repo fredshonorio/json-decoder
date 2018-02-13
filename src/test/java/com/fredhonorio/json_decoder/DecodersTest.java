@@ -8,6 +8,9 @@ import javaslang.control.Try;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -482,6 +485,21 @@ public class DecodersTest {
             "expected String, got JNumber{value=1}",
             tryDecodeString("1", Decoders.String).failed().get().getMessage()
         );
+    }
+
+    @Test
+    public void debugTest() {
+        AtomicInteger c = new AtomicInteger(0);
+
+        Decoder<Json.JNull> d = debug(__ -> c.incrementAndGet(), Decoders.JNull);
+
+        decodeString("null", d);
+        assertEquals(1, c.get());
+        decodeString("1", d);
+        assertEquals(2, c.get());
+
+        // just for coverage, there's nothing to test
+        Decoder<Json.JNull> noOp = debug(Decoders.JNull);
     }
 
 }
