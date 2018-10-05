@@ -1,8 +1,8 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.collection.HashMap;
-import javaslang.collection.List;
-import javaslang.control.Option;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.junit.Test;
 
 import java.time.temporal.ChronoField;
@@ -13,11 +13,11 @@ import static com.fredhonorio.json_decoder.Decoders.Integer;
 import static com.fredhonorio.json_decoder.Decoders.String;
 import static com.fredhonorio.json_decoder.Decoders.*;
 import static com.fredhonorio.json_decoder.ReadmeTest.Tree.tree;
-import static javaslang.collection.List.empty;
-import static javaslang.control.Either.left;
-import static javaslang.control.Either.right;
-import static javaslang.control.Option.none;
-import static javaslang.control.Option.some;
+import static io.vavr.collection.List.empty;
+import static io.vavr.control.Either.left;
+import static io.vavr.control.Either.right;
+import static io.vavr.control.Option.none;
+import static io.vavr.control.Option.some;
 import static org.junit.Assert.assertEquals;
 
 public class ReadmeTest {
@@ -66,7 +66,7 @@ public class ReadmeTest {
         Object r;
 
         Decoder<LinkedList<Integer>> linkedList = list(Integer)
-            .map(ints -> ints.toJavaCollection(LinkedList::new));
+            .map(ints -> ints.toJavaCollection(__ -> new LinkedList<>()));
 
         r = decodeString("[1, 2, 3]", linkedList);
         assertEquals(right(new LinkedList<>(Arrays.asList(1, 2, 3))), r);

@@ -1,16 +1,16 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.*;
-import javaslang.control.Either;
-import javaslang.control.Try;
+import io.vavr.*;
+import io.vavr.control.Either;
+import io.vavr.control.Try;
 import net.hamnaberg.json.Json;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.fredhonorio.json_decoder.EitherExtra.tryEither;
-import static javaslang.control.Either.left;
-import static javaslang.control.Either.right;
+import static io.vavr.control.Either.left;
+import static io.vavr.control.Either.right;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 /**
@@ -73,14 +73,14 @@ public interface Decoder<T> {
     /**
      * Attempts to transform the decoded value, fails with a the message of the thrown exception.
      */
-    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f) {
+    default <U> Decoder<U> mapTry(CheckedFunction1<T, U> f) {
         return mapTry(f, Throwable::getMessage);
     }
 
     /**
      * Attempts to transform the decoded value, fails with a given message if the transformation fails.
      */
-    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, String ifFailed) {
+    default <U> Decoder<U> mapTry(CheckedFunction1<T, U> f, String ifFailed) {
         return x -> apply(x).flatMap(y -> tryEither(() -> f.apply(y)).mapLeft(err -> ifFailed));
     }
 
@@ -88,7 +88,7 @@ public interface Decoder<T> {
      * Attempts to transform the decoded value, fails if the transformation fails. Accepts a callback to produce an
      * error depending on the exception.
      */
-    default <U> Decoder<U> mapTry(Try.CheckedFunction<T, U> f, Function<Throwable, String> ifFailed) {
+    default <U> Decoder<U> mapTry(CheckedFunction1<T, U> f, Function<Throwable, String> ifFailed) {
         return x -> apply(x).flatMap(y ->
             Try.of(() -> f.apply(y))
                 .toEither()

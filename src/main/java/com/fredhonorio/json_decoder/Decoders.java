@@ -1,14 +1,14 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.Tuple;
-import javaslang.Tuple2;
-import javaslang.collection.HashMap;
-import javaslang.collection.List;
-import javaslang.collection.Map;
-import javaslang.collection.Stream;
-import javaslang.control.Either;
-import javaslang.control.Option;
-import javaslang.control.Try;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.List;
+import io.vavr.collection.Map;
+import io.vavr.collection.Stream;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import net.hamnaberg.json.Json;
 import net.hamnaberg.json.jackson.JacksonStreamingParser;
 
@@ -18,8 +18,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.fredhonorio.json_decoder.EitherExtra.*;
-import static javaslang.control.Either.left;
-import static javaslang.control.Either.right;
+import static io.vavr.control.Either.left;
+import static io.vavr.control.Either.right;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 /**
@@ -98,7 +98,7 @@ public final class Decoders {
             .map(Stream::ofAll)
             .flatMap(s ->
                 s.zipWithIndex()
-                    .map(t -> t.transform((j, idx) -> inner.mapError(err -> "array element #" + idx + ": " + err).apply(j)))
+                    .map(t -> t.apply((j, idx) -> inner.mapError(err -> "array element #" + idx + ": " + err).apply(j)))
                     .transform(EitherExtra::sequence)
             );
     }
@@ -338,7 +338,9 @@ public final class Decoders {
      * @return
      */
     public static <T> Either<String, T> decodeString(String json, Decoder<T> decoder) {
-        return tryEither(() -> new JacksonStreamingParser().parse(json))
+        return new JacksonStreamingParser().parse(json)
+            .toEither()
+            .mapLeft(Throwable::getMessage)
             .flatMap(decoder::apply);
     }
 
@@ -361,7 +363,7 @@ public final class Decoders {
      * @return
      */
     public static <T> Try<T> tryDecodeString(String json, Decoder<T> decoder) {
-        return Try.of(() -> new JacksonStreamingParser().parse(json))
+        return new JacksonStreamingParser().parse(json)
             .flatMap(j -> tryDecodeValue(j, decoder));
     }
 

@@ -1,20 +1,21 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.collection.List;
-import javaslang.collection.Seq;
-import javaslang.control.Either;
-import javaslang.control.Option;
-import javaslang.control.Try;
+import io.vavr.CheckedFunction0;
+import io.vavr.collection.List;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 
-import static javaslang.control.Either.left;
-import static javaslang.control.Either.right;
+import static io.vavr.control.Either.left;
+import static io.vavr.control.Either.right;
 
 public final class EitherExtra {
     private EitherExtra() {
     }
 
     /**
-     * Returns a {@link javaslang.control.Either.Right} if the value exists, a {@link javaslang.control.Either.Left}
+     * Returns a {@link io.vavr.control.Either.Right} if the value exists, a {@link io.vavr.control.Either.Left}
      * with a given value otherwise.
      *
      * @param s
@@ -30,7 +31,7 @@ public final class EitherExtra {
     }
 
     /**
-     * Returns the first {@link javaslang.control.Either.Left} or a list of all values on {@link javaslang.control.Either.Right}.
+     * Returns the first {@link io.vavr.control.Either.Left} or a list of all values on {@link io.vavr.control.Either.Right}.
      *
      * @param res
      * @param <L>
@@ -56,7 +57,7 @@ public final class EitherExtra {
      * @param <U>
      * @return
      */
-    static <U> Either<String, U> tryEither(Try.CheckedSupplier<U> f) {
+    static <U> Either<String, U> tryEither(CheckedFunction0<U> f) {
         return Try.of(f).toEither().mapLeft(Throwable::getMessage);
     }
 

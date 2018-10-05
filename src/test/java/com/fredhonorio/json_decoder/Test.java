@@ -1,6 +1,6 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.control.Either;
+import io.vavr.control.Either;
 
 import java.util.function.Predicate;
 

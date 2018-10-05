@@ -1,7 +1,7 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.*;
-import javaslang.collection.List;
+import io.vavr.*;
+import io.vavr.collection.List;
 import org.junit.*;
 import org.junit.Test;
 

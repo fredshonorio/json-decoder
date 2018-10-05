@@ -1,7 +1,7 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.control.Either;
-import javaslang.control.Option;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 

@@ -1,10 +1,10 @@
 package com.fredhonorio.json_decoder;
 
-import javaslang.Tuple;
-import javaslang.collection.HashMap;
-import javaslang.collection.List;
-import javaslang.control.Option;
-import javaslang.control.Try;
+import io.vavr.Tuple;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.List;
+import io.vavr.control.Option;
+import io.vavr.control.Try;
 import net.hamnaberg.json.Json;
 import org.junit.Test;
 
@@ -25,8 +25,8 @@ import static com.fredhonorio.json_decoder.Decoders.String;
 import static com.fredhonorio.json_decoder.Test.assertError;
 import static com.fredhonorio.json_decoder.Test.assertValue;
 import static java.util.function.Predicate.isEqual;
-import static javaslang.control.Option.none;
-import static javaslang.control.Option.some;
+import static io.vavr.control.Option.none;
+import static io.vavr.control.Option.some;
 import static net.hamnaberg.json.Json.jObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
